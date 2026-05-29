@@ -284,7 +284,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">品項名稱 C欄 (選填)</label>
-                            <input type="text" id="formItemName" placeholder="例如：香菇" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <input type="text" id="formItemName" placeholder="placeholder" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">補貨標準數量 G欄 (必填)</label>
@@ -484,15 +484,77 @@
         }
 
         // ==========================================
-        // 🎯 內建補貨標準資料庫 - 配合您的要求完全清空模擬品項
+        // 🎯 內建補貨標準資料庫 - 預載您提供的所有標準項目 (更新版)
         // ==========================================
-        const DEFAULT_STANDARDS = {};
+        const DEFAULT_STANDARDS = {
+            "A0201A101_KG": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg", "refill": 80 },
+            "A0201A101_KG/大發": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg/大發", "refill": 80 },
+            "A0201B101_600G/包": { "name": "杏鮑菇B+", "code": "A0201B101", "unit": "600g/包", "refill": 150 },
+            "A0201B101_600G/包/大發": { "name": "杏鮑菇B+", "code": "A0201B101", "unit": "600g/包/大發", "refill": 150 },
+            "A0201D101_KG": { "name": "杏鮑菇大D", "code": "A0201D101", "unit": "kg", "refill": 90 },
+            "A020A0101_KG": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg", "refill": 800 },
+            "A020A0101_KG/大發": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/大發", "refill": 160 },
+            "A020A0101_KG/威蕈多": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/威蕈多", "refill": 80 },
+            "A020A0301_300G/盒": { "name": "有機杏鮑菇A", "code": "A020A0301", "unit": "300g/盒", "refill": 72 },
+            "A020B0101_KG": { "name": "杏鮑菇B", "code": "A020B0101", "unit": "kg", "refill": 540 },
+            "A020C0101_1KG/包/大發": { "name": "杏鮑菇C", "code": "A020C0101", "unit": "1kg/包/大發", "refill": 80 },
+            "A020C0101_KG": { "name": "杏鮑菇C", "code": "A020C0101", "unit": "kg", "refill": 540 },
+            "A020C1101_1KG/包": { "name": "杏鮑菇小C", "code": "A020C1101", "unit": "1kg/包", "refill": 80 },
+            "A020D0101_KG": { "name": "杏鮑菇D", "code": "A020D0101", "unit": "kg", "refill": 540 },
+            "A020D1101_KG": { "name": "杏鮑菇小D", "code": "A020D1101", "unit": "kg", "refill": 180 },
+            "A020D2101_KG": { "name": "杏鮑菇碎D", "code": "A020D2101", "unit": "kg", "refill": 360 },
+            "A05000102_包": { "name": "淞茂-胖胖金針菇", "code": "A05000102", "unit": "包", "refill": 1000 },
+            "A0501B101_KG": { "name": "金針菇B+", "code": "A0501B101", "unit": "kg", "refill": 500 },
+            "A0501B102_KG": { "name": "豐生-金針菇B＋", "code": "A0501B102", "unit": "kg", "refill": 500 },
+            "A050A0101_KG": { "name": "金針菇A", "code": "A050A0101", "unit": "kg", "refill": 500 },
+            "A050A0103_KG": { "name": "豐生-金針菇A", "code": "A050A0103", "unit": "kg", "refill": 500 },
+            "A06000103_KG": { "name": "黑珍珠菇", "code": "A06000103", "unit": "kg", "refill": 48 },
+            "A06000304_包": { "name": "好菇道有機鴻喜菇", "code": "A06000304", "unit": "包", "refill": 1890 },
+            "A060A0101_KG": { "name": "鴻喜菇A", "code": "A060A0101", "unit": "kg", "refill": 48 },
+            "A060B0101_KG": { "name": "鴻喜菇B", "code": "A060B0101", "unit": "kg", "refill": 450 },
+            "A07000302_包": { "name": "好菇道有機雪白菇", "code": "A07000302", "unit": "包", "refill": 1890 },
+            "A070B0101_KG": { "name": "雪白菇B", "code": "A070B0101", "unit": "kg", "refill": 400 },
+            "A090A0101_KG": { "name": "秀珍菇A", "code": "A090A0101", "unit": "kg", "refill": 450 },
+            "A100A0101_200G/盒": { "name": "霸王洋菇", "code": "A100A0101", "unit": "200g/盒", "refill": 100 },
+            "A100B0101_200G/盒": { "name": "洋菇 ［盒裝］", "code": "A100B0101", "unit": "200g/盒", "refill": 100 },
+            "A110A0101_KG": { "name": "黑蠔菇A", "code": "A110A0101", "unit": "kg", "refill": 240 },
+            "A110A0303_盒": { "name": "有機黑蠔菇A［盒裝］", "code": "A110A0303", "unit": "盒", "refill": 864 },
+            "A120A0101_KG": { "name": "白精靈菇A", "code": "A120A0101", "unit": "kg", "refill": 160 },
+            "A13000302_包": { "name": "有機完株金滑菇", "code": "A13000302", "unit": "包", "refill": 120 },
+            "A140A0101_600G/包": { "name": "鮑魚菇A", "code": "A140A0101", "unit": "600g/包", "refill": 60 },
+            "A15000101_包": { "name": "好菇道舞菇", "code": "A15000101", "unit": "包", "refill": 120 },
+            "A160A0301_150G/包": { "name": "有機柳松菇A", "code": "A160A0301", "unit": "150g/包", "refill": 108 },
+            "A18000101_600G/包": { "name": "珊瑚菇", "code": "A18000101", "unit": "600g/包", "refill": 60 },
+            "A290A0102_KG": { "name": "韓小菇A", "code": "A290A0102", "unit": "kg", "refill": 12 },
+            "A290A0301_150G/盒": { "name": "有機韓小菇A", "code": "A290A0301", "unit": "150g/盒", "refill": 72 },
+            "D05000101_KG": { "name": "洋蔥［去皮］", "code": "D05000101", "unit": "kg", "refill": 80 },
+            "D05000105_1公斤/包": { "name": "紫洋蔥［帶皮］", "code": "D05000105", "unit": "1公斤/包", "refill": 0 },
+            "D05000106_2KG/包": { "name": "洋蔥［帶皮］", "code": "D05000106", "unit": "2kg/包", "refill": 20 },
+            "G020A0101_KG": { "name": "水果彩椒［紅］", "code": "G020A0101", "unit": "kg", "refill": 3 },
+            "G020A0102_KG": { "name": "水果彩椒［黃］", "code": "G020A0102", "unit": "kg", "refill": 3 },
+            "G020A0103_KG": { "name": "水果彩椒［橘］", "code": "G020A0103", "unit": "kg", "refill": 3 },
+            "J02000102_600G/包": { "name": "青蔥［末］", "code": "J02000102", "unit": "600g/包", "refill": 10 },
+            "K03000101_200G/包": { "name": "娃娃菜", "code": "K03000101", "unit": "200g/包", "refill": 100 },
+            "L04000101_KG": { "name": "玉米筍", "code": "L04000101", "unit": "kg", "refill": 48 },
+            "L04000101_盒": { "name": "玉米筍", "code": "L04000101", "unit": "盒", "refill": 50 },
+            "L04000104_2KG/包": { "name": "帶殼玉米筍", "code": "L04000104", "unit": "2kg/包", "refill": 20 },
+            "R04000101_包": { "name": "真空馬鈴薯丁［碎］", "code": "R04000101", "unit": "包", "refill": 20 },
+            "R04000102_包": { "name": "真空馬鈴薯丁［1cm］", "code": "R04000102", "unit": "包", "refill": 20 },
+            "R04000103_包": { "name": "真空馬鈴薯丁［2cm］", "code": "R04000103", "unit": "包", "refill": 20 },
+            "R05000101_包": { "name": "日茂-茭白筍", "code": "R05000101", "unit": "包", "refill": 20 },
+            "R06000101_包": { "name": "日茂-去殼烏殼綠竹筍", "code": "R06000101", "unit": "包", "refill": 20 },
+            "R06000102_包": { "name": "日茂-烏殼綠筍茸", "code": "R06000102", "unit": "包", "refill": 20 },
+            "R06000103_包": { "name": "日茂-連殼綠竹筍［2入］", "code": "R06000103", "unit": "包", "refill": 20 },
+            "R06000106_包": { "name": "日茂-連殼綠竹筍［小-5入］", "code": "R06000106", "unit": "包", "refill": 20 },
+            "S02000101_KG": { "name": "雨來菇", "code": "S02000101", "unit": "kg", "refill": 0 }
+        };
 
         // 全域補貨標準對照表 (從 localStorage 讀取，若無則使用預設)
         let replenishStandards = {};
 
         function loadStandardsFromStorage() {
-            const stored = localStorage.getItem('replenish_standards_db_v5');
+            // 使用 v6 版本金鑰，確保直接載入這次全新的內建標準，不被舊 localstorage 覆蓋
+            const stored = localStorage.getItem('replenish_standards_db_v6');
             if (stored) {
                 replenishStandards = JSON.parse(stored);
             } else {
@@ -502,7 +564,7 @@
         }
 
         function saveStandardsToStorage() {
-            localStorage.setItem('replenish_standards_db_v5', JSON.stringify(replenishStandards));
+            localStorage.setItem('replenish_standards_db_v6', JSON.stringify(replenishStandards));
         }
 
         // 初始化加載
@@ -515,10 +577,37 @@
                 document.getElementById('cloudUrlInput').value = savedUrl;
             }
             
-            // 🚀 全自動讀取機制：當您把 HTML 放在您 GitHub Pages 或是本地資料夾時，
-            // 只要同一個目錄下有「補貨標準.csv」檔案，網頁載入時就會全自動撈取並加載！
+            // 🚀 全自動偵測 JSON 備份檔與 CSV 機制
+            autoLoadBackupJson();
             autoDetectLocalFile();
         });
+
+        // 🚀 全自動載入與合併上傳的 JSON 備份檔
+        function autoLoadBackupJson() {
+            fetch('倉庫補貨標準備份_20260529.json')
+                .then(response => {
+                    if (response.ok) return response.json();
+                    throw new Error('No backup json found');
+                })
+                .then(jsonData => {
+                    console.log('偵測到 倉庫補貨標準備份_20260529.json，自動載入並合併中...');
+                    let mergedCount = 0;
+                    for (let key in jsonData) {
+                        if (jsonData[key].code && jsonData[key].unit && jsonData[key].refill !== undefined) {
+                            replenishStandards[key] = jsonData[key];
+                            mergedCount++;
+                        }
+                    }
+                    if (mergedCount > 0) {
+                        saveStandardsToStorage();
+                        renderSettingsList();
+                        showToast(`已成功自動預載備份檔！共載入 ${mergedCount} 個精準補貨標準。`, 'shield-check', 'text-emerald-400');
+                    }
+                })
+                .catch(err => {
+                    console.log('未偵測到預載 JSON 備份檔，將採用代碼內建之 DEFAULT_STANDARDS。');
+                });
+        }
 
         // 全自動讀取本機 CSV 的機制
         function autoDetectLocalFile() {
