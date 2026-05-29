@@ -28,7 +28,7 @@
                     <h1 class="text-xl font-bold tracking-tight">倉庫智慧補貨檢視系統</h1>
                     <div class="flex flex-wrap items-center gap-2 mt-1">
                         <span class="text-xs text-indigo-200">內建標準模式 • 免維護 Excel 補貨標準欄</span>
-                        <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定三倉比對模式</span>
+                        <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定三倉比對模式 (代號+單位精準校對)</span>
                     </div>
                 </div>
             </div>
@@ -74,7 +74,7 @@
                         <ul class="space-y-2.5 text-sm text-slate-600">
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
-                                <span><b>自動對應：</b>系統會比對品項代號，自動套用您在網頁中設定的「補貨標準」。</span>
+                                <span><b>自動對應：</b>系統會同時比對<b>品項代號</b>與<b>庫存單位</b>，精準套用設定的補貨標準。</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
@@ -158,7 +158,7 @@
                         <i data-lucide="tag" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-400 font-medium">不重複品項數</div>
+                        <div class="text-xs text-slate-400 font-medium">不重複品項數 (代號+單位)</div>
                         <div id="statItems" class="text-2xl font-bold text-slate-800">-</div>
                     </div>
                 </div>
@@ -220,7 +220,7 @@
                                 <th class="px-6 py-4">品類</th>
                                 <th class="px-6 py-4">品項代號</th>
                                 <th class="px-6 py-4">品項名稱</th>
-                                <th class="px-6 py-4">單位</th>
+                                <th class="px-6 py-4">庫存單位</th>
                                 <th class="px-6 py-4">倉庫</th>
                                 <th class="px-6 py-4 text-right">庫存數量</th>
                                 <th class="px-6 py-4 text-right">內建補貨標準</th>
@@ -275,15 +275,19 @@
                     </div>
                     <form id="stdForm" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">品項代號 (必填)</label>
-                            <input type="text" id="formItemCode" required placeholder="例如：A01000103" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">品項代號 B欄 (必填)</label>
+                            <input type="text" id="formItemCode" required placeholder="例如：T08000101" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">品項名稱 (選填)</label>
-                            <input type="text" id="formItemName" placeholder="例如：日燦-特挑香菇" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">庫存單位 D欄 (必填)</label>
+                            <input type="text" id="formUnit" required placeholder="例如：300g/包 或 kg" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">補貨標準數量 (必填)</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">品項名稱 C欄 (選填)</label>
+                            <input type="text" id="formItemName" placeholder="例如：綠橡木生菜" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">補貨標準數量 G欄 (必填)</label>
                             <input type="number" id="formRefill" required min="0" step="any" placeholder="例如：10" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         </div>
                         <div class="flex space-x-2 pt-2">
@@ -308,7 +312,7 @@
                                 一鍵匯入舊檔標準
                             </h3>
                             <p class="text-xs text-slate-500 leading-relaxed">
-                                上傳包含「補貨標準」欄位的舊 Excel/CSV 檔案，系統會自動抓取其中的<b>品項代號</b>及<b>補貨標準</b>並存入本機，以後就不需要再手動輸入了！
+                                上傳包含「補貨標準」及「單位」欄位的舊 Excel/CSV 檔案，系統會自動學習各品項<b>「代號+單位」</b>的對應標準並存入本機，以後就不需要再手動輸入了！
                             </p>
                         </div>
                         <div class="flex flex-col justify-center items-center md:items-end">
@@ -317,7 +321,7 @@
                                 <i data-lucide="import" class="w-4 h-4"></i>
                                 <span>上傳舊檔自動學習</span>
                             </button>
-                            <p class="text-[10px] text-slate-400 mt-1.5">自動過濾並更新現有的品項標準</p>
+                            <p class="text-[10px] text-slate-400 mt-1.5">將根據「代號 + 單位」精準建立補貨標準</p>
                         </div>
                     </div>
 
@@ -326,10 +330,10 @@
                         <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3">
                             <div>
                                 <h3 class="text-sm font-bold text-slate-900">目前已設定的補貨標準</h3>
-                                <p class="text-xs text-slate-400 mt-0.5">共有 <span id="stdCountText" class="font-bold text-indigo-600">0</span> 個品項設定</p>
+                                <p class="text-xs text-slate-400 mt-0.5">共有 <span id="stdCountText" class="font-bold text-indigo-600">0</span> 個品項設定 (以 B欄代號 + D欄單位 比對)</p>
                             </div>
                             <div class="flex gap-2 w-full sm:w-auto">
-                                <input type="text" id="searchStdInput" placeholder="快速搜尋代號/品項..." class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full sm:w-48">
+                                <input type="text" id="searchStdInput" placeholder="快速搜尋代號/單位/品項..." class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full sm:w-48">
                                 <button id="btnClearAllStds" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center shrink-0">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1"></i> 全部清空
                                 </button>
@@ -342,6 +346,7 @@
                                 <thead class="bg-slate-50 sticky top-0 border-b border-slate-100 font-semibold text-slate-500">
                                     <tr>
                                         <th class="px-6 py-3">品項代號</th>
+                                        <th class="px-6 py-3">庫存單位</th>
                                         <th class="px-6 py-3">品項名稱</th>
                                         <th class="px-6 py-3 text-right">補貨標準數量</th>
                                         <th class="px-6 py-3 text-center">操作</th>
@@ -446,25 +451,34 @@
             "63-7倉"
         ];
 
-        // 預載基本品項資料做為初始範例 (方便使用者第一次打開就有基本資料)
+        // 輔助函式：建立代號 + 單位的唯一 Key (不分大小寫與多餘空格)
+        function makeKey(code, unit) {
+            return `${String(code || '').trim().toUpperCase()}_${String(unit || '').trim().toUpperCase()}`;
+        }
+
+        // 預載基本品項資料做為初始範例 (品項代號與單位同時精準匹配)
         const DEFAULT_STANDARDS = {
-            "A01000101": { name: "香菇［直腳］", refill: 100 },
-            "A01000103": { name: "日燦-特挑香菇［4.5-6.5cm］", refill: 10 },
-            "A01000105": { name: "王品-特挑香菇［4-6cm］", refill: 30 },
-            "A01000110": { name: "生展-特挑香菇［4-6cm］", refill: 50 },
-            "A01000115": { name: "香菇［條碼］", refill: 15 },
-            "A01000116": { name: "台茂-特挑香菇［4-6cm］", refill: 20 },
-            "T08000101": { name: "綠橡木生菜", refill: 10 },
-            "T09000101": { name: "紅火焰生菜", refill: 15 },
-            "T10000101": { name: "綠火焰生菜", refill: 20 },
-            "T11000101": { name: "紅蘿蔓", refill: 10 }
+            "A01000101_KG": { name: "香菇［直腳］", code: "A01000101", unit: "kg", refill: 100 },
+            "A01000103_KG": { name: "日燦-特挑香菇［4.5-6.5cm］", code: "A01000103", unit: "kg", refill: 10 },
+            "A01000105_KG": { name: "王品-特挑香菇［4-6cm］", code: "A01000105", unit: "kg", refill: 30 },
+            "A01000110_KG": { name: "生展-特挑香菇［4-6cm］", code: "A01000110", unit: "kg", refill: 50 },
+            "A01000115_400G/盒": { name: "香菇［條碼］", code: "A01000115", unit: "400g/盒", refill: 15 },
+            "A01000116_1KG/包": { name: "台茂-特挑香菇［4-6cm］", code: "A01000116", unit: "1kg/包", refill: 20 },
+            "T08000101_300G/包": { name: "綠橡木生菜", code: "T08000101", unit: "300g/包", refill: 10 },
+            "T08000101_KG": { name: "綠橡木生菜", code: "T08000101", unit: "kg", refill: 15 },
+            "T09000101_300G/包": { name: "紅火焰生菜", code: "T09000101", unit: "300g/包", refill: 15 },
+            "T09000101_KG": { name: "紅火焰生菜", code: "T09000101", unit: "kg", refill: 30 },
+            "T10000101_1KG/包": { name: "綠火焰生菜", code: "T10000101", unit: "1kg/包", refill: 10 },
+            "T10000101_300G/包": { name: "綠火焰生菜", code: "T10000101", unit: "300g/包", refill: 20 },
+            "T11000101_300G/包": { name: "紅蘿蔓", code: "T11000101", unit: "300g/包", refill: 10 },
+            "T11000101_KG": { name: "紅蘿蔓", code: "T11000101", unit: "kg", refill: 10 }
         };
 
         // 全域補貨標準對照表 (從 localStorage 讀取，若無則使用預設)
         let replenishStandards = {};
 
         function loadStandardsFromStorage() {
-            const stored = localStorage.getItem('replenish_standards_db');
+            const stored = localStorage.getItem('replenish_standards_db_v2');
             if (stored) {
                 replenishStandards = JSON.parse(stored);
             } else {
@@ -474,7 +488,7 @@
         }
 
         function saveStandardsToStorage() {
-            localStorage.setItem('replenish_standards_db', JSON.stringify(replenishStandards));
+            localStorage.setItem('replenish_standards_db_v2', JSON.stringify(replenishStandards));
         }
 
         // 初始化加載
@@ -594,6 +608,7 @@
         // --- 補貨標準管理中心 JS 邏輯 ---
         const stdForm = document.getElementById('stdForm');
         const formItemCode = document.getElementById('formItemCode');
+        const formUnit = document.getElementById('formUnit');
         const formItemName = document.getElementById('formItemName');
         const formRefill = document.getElementById('formRefill');
         const btnResetForm = document.getElementById('btnResetForm');
@@ -604,24 +619,32 @@
         const btnImportStd = document.getElementById('btnImportStd');
         const importStdFile = document.getElementById('importStdFile');
 
-        // 表單提交：新增/修改標準
+        // 表單提交：新增/修改標準 (以代號+單位複合鍵存儲)
         stdForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const code = formItemCode.value.trim();
+            const unit = formUnit.value.trim();
             const name = formItemName.value.trim();
             const val = parseFloat(formRefill.value);
 
-            if (!code || isNaN(val)) return;
+            if (!code || !unit || isNaN(val)) return;
 
-            replenishStandards[code] = {
-                name: name || (replenishStandards[code] ? replenishStandards[code].name : '未命名品項'),
+            const compositeKey = makeKey(code, unit);
+
+            replenishStandards[compositeKey] = {
+                name: name || (replenishStandards[compositeKey] ? replenishStandards[compositeKey].name : '未命名品項'),
+                code: code,
+                unit: unit,
                 refill: val
             };
 
             saveStandardsToStorage();
             renderSettingsList();
             stdForm.reset();
-            showToast(`成功儲存品項 ${code} 的補貨標準為 ${val}`, 'check', 'text-emerald-400');
+            formItemCode.removeAttribute('readonly');
+            formUnit.removeAttribute('readonly');
+            document.getElementById('formTitle').textContent = "新增/修改補貨標準";
+            showToast(`成功儲存品項 [${code}] 單位 [${unit}] 的補貨標準為 ${val}`, 'check', 'text-emerald-400');
             
             // 如果此時已經有載入數據，重新分析
             if (originalRows.length > 0) {
@@ -633,6 +656,7 @@
             stdForm.reset();
             document.getElementById('formTitle').textContent = "新增/修改補貨標準";
             formItemCode.removeAttribute('readonly');
+            formUnit.removeAttribute('readonly');
         });
 
         // 搜尋標準列表
@@ -695,7 +719,7 @@
             }
         }
 
-        // 處理匯入來的數據列，抽取出補貨標準
+        // 處理匯入來的數據列，抽取出「代號 + 單位 + 補貨標準」
         function processImportedRows(rows) {
             if (rows.length < 2) {
                 showToast('無效檔案或空數據列', 'alert-circle', 'text-rose-400');
@@ -704,11 +728,17 @@
 
             const headers = rows[0].map(h => String(h || '').trim());
             const colItemCode = headers.findIndex(h => h.includes('品項代號'));
-            const colItemName = headers.findIndex(h => h.includes('品項') && !h.includes('代號'));
+            const colUnit = headers.findIndex(h => h.includes('單位') || h.includes('庫存單位'));
+            const colItemName = headers.findIndex(h => h.includes('品項') && !h.includes('代號') && !h.includes('單位'));
             const colRefill = headers.findIndex(h => h.includes('補貨標準'));
 
             if (colItemCode === -1 || colRefill === -1) {
                 showToast('此舊檔案不包含「品項代號」或「補貨標準」欄位，無法自動學習！', 'alert-circle', 'text-rose-400');
+                return;
+            }
+
+            if (colUnit === -1) {
+                showToast('此舊檔案未偵測到「單位」或「庫存單位」欄位，請補齊後再進行匯入學期。', 'alert-circle', 'text-rose-400');
                 return;
             }
 
@@ -718,12 +748,16 @@
                 if (!cells || cells.length === 0) continue;
 
                 const code = cells[colItemCode] ? String(cells[colItemCode]).trim() : '';
+                const unit = cells[colUnit] ? String(cells[colUnit]).trim() : '';
                 const name = colItemName !== -1 && cells[colItemName] ? String(cells[colItemName]).trim() : '';
                 const refillVal = cells[colRefill] !== undefined && cells[colRefill] !== '' ? parseFloat(cells[colRefill]) : null;
 
-                if (code && refillVal !== null && !isNaN(refillVal)) {
-                    replenishStandards[code] = {
-                        name: name || (replenishStandards[code] ? replenishStandards[code].name : '未命名品項'),
+                if (code && unit && refillVal !== null && !isNaN(refillVal)) {
+                    const compositeKey = makeKey(code, unit);
+                    replenishStandards[compositeKey] = {
+                        name: name || (replenishStandards[compositeKey] ? replenishStandards[compositeKey].name : '未命名品項'),
+                        code: code,
+                        unit: unit,
                         refill: refillVal
                     };
                     importCount++;
@@ -733,7 +767,7 @@
             if (importCount > 0) {
                 saveStandardsToStorage();
                 renderSettingsList();
-                showToast(`學習成功！已自動從舊檔案中匯入及更新 ${importCount} 個品項補貨標準。`, 'check', 'text-emerald-400');
+                showToast(`學習成功！已自動根據「代號+單位」匯入與更新 ${importCount} 個補貨標準。`, 'check', 'text-emerald-400');
                 importStdFile.value = '';
                 
                 // 重新計算現有報表
@@ -741,7 +775,7 @@
                     analyzeInventory();
                 }
             } else {
-                showToast('在該檔案中找不到有效的「補貨標準」數據。', 'alert-circle', 'text-rose-400');
+                showToast('在該檔案中找不到有效的「代號 + 單位 + 補貨標準」數據。', 'alert-circle', 'text-rose-400');
             }
         }
 
@@ -753,22 +787,28 @@
             let sortedKeys = Object.keys(replenishStandards).sort();
             let displayCount = 0;
 
-            sortedKeys.forEach(code => {
-                const item = replenishStandards[code];
-                if (query && !code.toLowerCase().includes(query) && !item.name.toLowerCase().includes(query)) {
-                    return; // 搜尋過濾
+            sortedKeys.forEach(compositeKey => {
+                const item = replenishStandards[compositeKey];
+                
+                // 多欄位模糊過濾
+                if (query && 
+                    !item.code.toLowerCase().includes(query) && 
+                    !item.unit.toLowerCase().includes(query) && 
+                    !item.name.toLowerCase().includes(query)) {
+                    return; 
                 }
 
                 displayCount++;
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition-colors";
                 tr.innerHTML = `
-                    <td class="px-6 py-3 font-mono font-semibold text-slate-800">${code}</td>
+                    <td class="px-6 py-3 font-mono font-semibold text-slate-800">${item.code}</td>
+                    <td class="px-6 py-3 text-slate-500 font-medium">${item.unit}</td>
                     <td class="px-6 py-3 text-slate-600">${item.name}</td>
                     <td class="px-6 py-3 text-right font-mono font-bold text-indigo-600">${item.refill}</td>
                     <td class="px-6 py-3 text-center space-x-1">
-                        <button onclick="editStd('${code}')" class="text-indigo-600 hover:text-indigo-900 font-medium px-2 py-1 rounded hover:bg-indigo-50">修改</button>
-                        <button onclick="deleteStd('${code}')" class="text-rose-600 hover:text-rose-900 font-medium px-2 py-1 rounded hover:bg-rose-50">刪除</button>
+                        <button onclick="editStd('${compositeKey}')" class="text-indigo-600 hover:text-indigo-900 font-medium px-2 py-1 rounded hover:bg-indigo-50">修改</button>
+                        <button onclick="deleteStd('${compositeKey}')" class="text-rose-600 hover:text-rose-900 font-medium px-2 py-1 rounded hover:bg-rose-50">刪除</button>
                     </td>
                 `;
                 stdTableBody.appendChild(tr);
@@ -779,7 +819,7 @@
             if (displayCount === 0) {
                 stdTableBody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="px-6 py-8 text-center text-slate-400">
+                        <td colspan="5" class="px-6 py-8 text-center text-slate-400">
                             沒有找到符合的補貨標準，請新增或匯入。
                         </td>
                     </tr>
@@ -789,26 +829,30 @@
         }
 
         // 修改/編輯標準
-        window.editStd = function(code) {
-            const item = replenishStandards[code];
+        window.editStd = function(compositeKey) {
+            const item = replenishStandards[compositeKey];
             if (item) {
-                formItemCode.value = code;
+                formItemCode.value = item.code;
                 formItemCode.setAttribute('readonly', true); // 防止修改代號
+                formUnit.value = item.unit;
+                formUnit.setAttribute('readonly', true); // 防止修改單位
                 formItemName.value = item.name;
                 formRefill.value = item.refill;
-                document.getElementById('formTitle').textContent = `正在修改: ${code}`;
+                document.getElementById('formTitle').textContent = `正在修改: ${item.code} (${item.unit})`;
                 formRefill.focus();
-                showToast(`已載入 ${code} 設定，請在左側修改後點選儲存`, 'info', 'text-sky-400');
+                showToast(`已載入 ${item.code} (${item.unit}) 設定，請在左側修改標準數量後點選儲存`, 'info', 'text-sky-400');
             }
         };
 
         // 刪除個別標準
-        window.deleteStd = function(code) {
-            if (confirm(`確定要刪除品項 [ ${code} ] 的補貨標準設定嗎？`)) {
-                delete replenishStandards[code];
+        window.deleteStd = function(compositeKey) {
+            const item = replenishStandards[compositeKey];
+            if (!item) return;
+            if (confirm(`確定要刪除品項 [ ${item.code} ] 單位為 [ ${item.unit} ] 的補貨標準設定嗎？`)) {
+                delete replenishStandards[compositeKey];
                 saveStandardsToStorage();
                 renderSettingsList();
-                showToast(`已刪除品項 ${code} 的補貨標準`, 'trash', 'text-rose-400');
+                showToast(`已刪除品項 ${item.code} (${item.unit}) 的補貨標準`, 'trash', 'text-rose-400');
                 if (originalRows.length > 0) {
                     analyzeInventory();
                 }
@@ -995,8 +1039,8 @@
                 const headerMap = {
                     category: headers.findIndex(h => h.includes('品類')),
                     itemCode: headers.findIndex(h => h.includes('品項代號')),
-                    itemName: headers.findIndex(h => h.includes('品項') && !h.includes('代號')),
-                    unit: headers.findIndex(h => h.includes('單位')),
+                    itemName: headers.findIndex(h => h.includes('品項') && !h.includes('代號') && !h.includes('單位')),
+                    unit: headers.findIndex(h => h.includes('單位') || h.includes('庫存單位')),
                     warehouse: headers.findIndex(h => h.includes('倉庫')),
                     stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量'))
                 };
@@ -1017,6 +1061,7 @@
 
                     const itemCode = cells[colIdx.itemCode] ? String(cells[colIdx.itemCode]).trim() : '';
                     const warehouse = cells[colIdx.warehouse] ? String(cells[colIdx.warehouse]).trim() : '';
+                    const unit = cells[colIdx.unit] ? String(cells[colIdx.unit]).trim() : '';
 
                     if (itemCode && warehouse) {
                         if (ALLOWED_WAREHOUSES.includes(warehouse)) {
@@ -1024,7 +1069,7 @@
                                 category: cells[colIdx.category] !== undefined ? String(cells[colIdx.category]).trim() : '',
                                 itemCode: itemCode,
                                 itemName: cells[colIdx.itemName] !== undefined ? String(cells[colIdx.itemName]).trim() : '',
-                                unit: cells[colIdx.unit] !== undefined ? String(cells[colIdx.unit]).trim() : '',
+                                unit: unit,
                                 warehouse: warehouse,
                                 stock: parseFloat(cells[colIdx.stock]) || 0
                             });
@@ -1056,8 +1101,8 @@
                 const headerMap = {
                     category: headers.findIndex(h => h.includes('品類')),
                     itemCode: headers.findIndex(h => h.includes('品項代號')),
-                    itemName: headers.findIndex(h => h.includes('品項') && !h.includes('代號')),
-                    unit: headers.findIndex(h => h.includes('單位')),
+                    itemName: headers.findIndex(h => h.includes('品項') && !h.includes('代號') && !h.includes('單位')),
+                    unit: headers.findIndex(h => h.includes('單位') || h.includes('庫存單位')),
                     warehouse: headers.findIndex(h => h.includes('倉庫')),
                     stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量'))
                 };
@@ -1079,12 +1124,13 @@
                     const cells = parseCSVLine(line);
                     if (cells[colIdx.itemCode] && cells[colIdx.warehouse]) {
                         const warehouse = cells[colIdx.warehouse].trim();
+                        const unit = cells[colIdx.unit] ? cells[colIdx.unit].trim() : '';
                         if (ALLOWED_WAREHOUSES.includes(warehouse)) {
                             parsedData.push({
                                 category: cells[colIdx.category] || '',
                                 itemCode: cells[colIdx.itemCode].trim(),
                                 itemName: cells[colIdx.itemName] || '',
-                                unit: cells[colIdx.unit] || '',
+                                unit: unit,
                                 warehouse: warehouse,
                                 stock: parseFloat(cells[colIdx.stock]) || 0
                             });
@@ -1117,15 +1163,16 @@
             return r.map(cell => cell.replace(/^"(.*)"$/, '$1').trim());
         }
 
-        // 核心計算：整合內建補貨標準
+        // 核心計算：整合內建補貨標準 (採用 代號+單位 精準校對)
         function analyzeInventory() {
-            // 建立 3 倉即時對照
+            // 建立 3 倉即時對照：必須細分至複合主鍵，因為多單位存在
             const inventoryLookup = {};
             originalRows.forEach(row => {
-                if (!inventoryLookup[row.itemCode]) {
-                    inventoryLookup[row.itemCode] = {};
+                const rowKey = makeKey(row.itemCode, row.unit);
+                if (!inventoryLookup[rowKey]) {
+                    inventoryLookup[rowKey] = {};
                 }
-                inventoryLookup[row.itemCode][row.warehouse] = (inventoryLookup[row.itemCode][row.warehouse] || 0) + row.stock;
+                inventoryLookup[rowKey][row.warehouse] = (inventoryLookup[rowKey][row.warehouse] || 0) + row.stock;
             });
 
             // 結合內建補貨標準進行補貨檢視
@@ -1134,8 +1181,9 @@
                 let isNoStandard = false;
                 let backupStockInfo = '';
                 
-                // 從網頁本機資料庫取得補貨標準
-                const stdItem = replenishStandards[row.itemCode];
+                // 從網頁本機資料庫取得補貨標準 (使用代號+單位鍵)
+                const compositeKey = makeKey(row.itemCode, row.unit);
+                const stdItem = replenishStandards[compositeKey];
                 const refillLimit = stdItem ? stdItem.refill : null;
 
                 // 如果上傳的 Excel 中沒有中文名稱，但本機庫存標準有，可以自動幫忙補正名稱
@@ -1147,21 +1195,18 @@
                 if (row.warehouse === "63-6倉/下層/理貨倉") {
                     if (refillLimit !== null) {
                         if (row.stock < refillLimit) {
-                            // 檢查 63-7 及 63-6上層 後援在庫狀態
-                            const code = row.itemCode;
-                            const stockIn7 = (inventoryLookup[code] && inventoryLookup[code]["63-7倉"]) || 0;
-                            const stockIn6Upper = (inventoryLookup[code] && inventoryLookup[code]["63-6倉/上層"]) || 0;
+                            // 檢查 63-7 及 63-6上層 後援在庫狀態 (以對應同代號、同單位為準)
+                            const stockIn7 = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["63-7倉"]) || 0;
+                            const stockIn6Upper = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["63-6倉/上層"]) || 0;
 
                             if (stockIn7 > 0 || stockIn6Upper > 0) {
                                 needReplenish = true;
                                 const backups = [];
                                 if (stockIn7 > 0) {
-                                    // 將後援數字包覆在強大的高亮 Span 裡並放大
-                                    backups.push(`63-7倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-sm text-[13px]">${stockIn7}</span>`);
+                                    backups.push(`63-7倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockIn7}</span>`);
                                 }
                                 if (stockIn6Upper > 0) {
-                                    // 將後援數字包覆在強大的高亮 Span 裡並放大
-                                    backups.push(`上層倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-sm text-[13px]">${stockIn6Upper}</span>`);
+                                    backups.push(`上層倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockIn6Upper}</span>`);
                                 }
                                 backupStockInfo = backups.join(' / ');
                             }
@@ -1195,7 +1240,8 @@
         function updateStatsAndUI() {
             statTotal.textContent = processedRows.length;
             
-            const uniqueItems = new Set(processedRows.map(r => r.itemCode));
+            // 品項數計算改採代號+單位之複合維度
+            const uniqueItems = new Set(processedRows.map(r => makeKey(r.itemCode, r.unit)));
             statItems.textContent = uniqueItems.size;
 
             const replenishCount = processedRows.filter(r => r.needReplenish).length;
@@ -1227,6 +1273,7 @@
                 displayRows = displayRows.filter(r => 
                     r.itemCode.toLowerCase().includes(query) || 
                     r.itemName.toLowerCase().includes(query) ||
+                    r.unit.toLowerCase().includes(query) ||
                     r.category.toLowerCase().includes(query)
                 );
             }
@@ -1259,11 +1306,12 @@
 
                 // 補貨標準欄位顯示
                 let refillCell = '';
+                const compositeKey = makeKey(row.itemCode, row.unit);
                 if (row.refill !== null) {
                     refillCell = `<span class="font-mono font-bold text-slate-900 text-sm">${row.refill}</span>`;
                 } else if (row.warehouse === "63-6倉/下層/理貨倉") {
                     refillCell = `
-                        <button onclick="quickSetStd('${row.itemCode}', '${row.itemName}')" class="text-xs text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 flex items-center inline-flex">
+                        <button onclick="quickSetStd('${compositeKey}', '${row.itemName}')" class="text-xs text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 flex items-center inline-flex">
                             <i data-lucide="plus" class="w-3 h-3 mr-0.5"></i> 設定標準
                         </button>
                     `;
@@ -1318,7 +1366,7 @@
                     <td class="px-6 py-4 text-slate-400 text-xs">${row.category}</td>
                     <td class="px-6 py-4 font-mono font-semibold">${row.itemCode}</td>
                     <td class="px-6 py-4 text-slate-900">${row.itemName}</td>
-                    <td class="px-6 py-4 text-slate-400 text-xs">${row.unit}</td>
+                    <td class="px-6 py-4 font-medium text-slate-500 text-xs">${row.unit}</td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-0.5 rounded text-xs ${
                             row.warehouse === '63-6倉/下層/理貨倉' 
@@ -1342,13 +1390,21 @@
         }
 
         // 快速前往設定標準 (加入密碼驗證判斷)
-        window.quickSetStd = function(code, name) {
+        window.quickSetStd = function(compositeKey, name) {
             const executeQuickSet = () => {
+                // 從 compositeKey 拆解出 code 與 unit
+                const splitIdx = compositeKey.lastIndexOf('_');
+                const code = compositeKey.substring(0, splitIdx);
+                const unit = compositeKey.substring(splitIdx + 1);
+
                 setActiveTab('settings');
                 formItemCode.value = code;
+                formItemCode.setAttribute('readonly', true);
+                formUnit.value = unit;
+                formUnit.setAttribute('readonly', true);
                 formItemName.value = name;
                 formRefill.value = '';
-                document.getElementById('formTitle').textContent = `設定品項標準: ${code}`;
+                document.getElementById('formTitle').textContent = `設定品項標準: ${code} (${unit})`;
                 formRefill.focus();
             };
 
