@@ -27,7 +27,7 @@
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">倉庫智慧補貨檢視系統</h1>
                     <div class="flex flex-wrap items-center gap-2 mt-1">
-                        <span class="text-xs text-indigo-200">內建標準模式 • 免維護 Excel 補貨標準欄</span>
+                        <span class="text-xs text-indigo-200">專屬客製化模式 • 免維護 Excel 補貨標準欄</span>
                         <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定三倉比對模式 (代號+單位精準校對)</span>
                     </div>
                 </div>
@@ -284,7 +284,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">品項名稱 C欄 (選填)</label>
-                            <input type="text" id="formItemName" placeholder="例如：綠橡木生菜" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <input type="text" id="formItemName" placeholder="例如：香菇" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">補貨標準數量 G欄 (必填)</label>
@@ -304,6 +304,33 @@
                 <!-- 批次與管理卡片 -->
                 <div class="lg:col-span-2 space-y-6">
                     
+                    <!-- 批次與雲端移轉按鈕（新功能：匯出與匯入標準設定檔） -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <h3 class="text-sm font-bold text-slate-950 flex items-center">
+                                <i data-lucide="cloud-lightning" class="w-4 h-4 text-indigo-500 mr-1.5"></i>
+                                跨電腦標準移轉 (免重複上傳)
+                            </h3>
+                            <p class="text-xs text-slate-500 leading-relaxed">
+                                您可以將目前這台電腦設定好的所有補貨標準匯出為一個極小的 <b>.json 備份檔</b>。帶去別台電腦一秒匯入，標準就能完美同步，不需重新上傳大檔案！
+                            </p>
+                        </div>
+                        <div class="flex flex-col gap-2 justify-center items-center md:items-end">
+                            <div class="flex gap-2">
+                                <button id="btnExportBackup" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-3.5 py-2 rounded-lg text-xs transition-colors border border-indigo-200 flex items-center space-x-1">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    <span>匯出標準備份 (.json)</span>
+                                </button>
+                                <button id="btnTriggerImportBackup" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3.5 py-2 rounded-lg text-xs transition-colors border border-slate-200 flex items-center space-x-1">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                                    <span>匯入標準備份</span>
+                                </button>
+                            </div>
+                            <input type="file" id="backupFileInput" accept=".json" class="hidden">
+                            <p class="text-[10px] text-slate-400">標準備份檔不包含庫存，純粹移轉「補貨臨界值」</p>
+                        </div>
+                    </div>
+
                     <!-- 批次匯入功能 -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -312,12 +339,12 @@
                                 一鍵匯入舊檔標準
                             </h3>
                             <p class="text-xs text-slate-500 leading-relaxed">
-                                上傳包含「補貨標準」及「單位」欄位的舊 Excel/CSV 檔案，系統會自動學習各品項<b>「代號+單位」</b>的對應標準並存入本機，以後就不需要再手動輸入了！
+                                上傳包含「補貨標準」及「單位」欄位的舊 Excel/CSV 檔案，系統會自動學習各品項<b>「代號+單位」</b>的對應標準並存入本機！
                             </p>
                         </div>
                         <div class="flex flex-col justify-center items-center md:items-end">
                             <input type="file" id="importStdFile" accept=".xlsx, .xls, .csv" class="hidden">
-                            <button id="btnImportStd" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors shadow-sm flex items-center space-x-2">
+                            <button id="btnImportStd" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors shadow-sm flex items-center space-x-2">
                                 <i data-lucide="import" class="w-4 h-4"></i>
                                 <span>上傳舊檔自動學習</span>
                             </button>
@@ -456,29 +483,16 @@
             return `${String(code || '').trim().toUpperCase()}_${String(unit || '').trim().toUpperCase()}`;
         }
 
-        // 預載基本品項資料做為初始範例 (品項代號與單位同時精準匹配)
-        const DEFAULT_STANDARDS = {
-            "A01000101_KG": { name: "香菇［直腳］", code: "A01000101", unit: "kg", refill: 100 },
-            "A01000103_KG": { name: "日燦-特挑香菇［4.5-6.5cm］", code: "A01000103", unit: "kg", refill: 10 },
-            "A01000105_KG": { name: "王品-特挑香菇［4-6cm］", code: "A01000105", unit: "kg", refill: 30 },
-            "A01000110_KG": { name: "生展-特挑香菇［4-6cm］", code: "A01000110", unit: "kg", refill: 50 },
-            "A01000115_400G/盒": { name: "香菇［條碼］", code: "A01000115", unit: "400g/盒", refill: 15 },
-            "A01000116_1KG/包": { name: "台茂-特挑香菇［4-6cm］", code: "A01000116", unit: "1kg/包", refill: 20 },
-            "T08000101_300G/包": { name: "綠橡木生菜", code: "T08000101", unit: "300g/包", refill: 10 },
-            "T08000101_KG": { name: "綠橡木生菜", code: "T08000101", unit: "kg", refill: 15 },
-            "T09000101_300G/包": { name: "紅火焰生菜", code: "T09000101", unit: "300g/包", refill: 15 },
-            "T09000101_KG": { name: "紅火焰生菜", code: "T09000101", unit: "kg", refill: 30 },
-            "T10000101_1KG/包": { name: "綠火焰生菜", code: "T10000101", unit: "1kg/包", refill: 10 },
-            "T10000101_300G/包": { name: "綠火焰生菜", code: "T10000101", unit: "300g/包", refill: 20 },
-            "T11000101_300G/包": { name: "紅蘿蔓", code: "T11000101", unit: "300g/包", refill: 10 },
-            "T11000101_KG": { name: "紅蘿蔓", code: "T11000101", unit: "kg", refill: 10 }
-        };
+        // ==========================================
+        // 🎯 內建補貨標準資料庫 - 配合您的要求完全清空模擬品項
+        // ==========================================
+        const DEFAULT_STANDARDS = {};
 
         // 全域補貨標準對照表 (從 localStorage 讀取，若無則使用預設)
         let replenishStandards = {};
 
         function loadStandardsFromStorage() {
-            const stored = localStorage.getItem('replenish_standards_db_v2');
+            const stored = localStorage.getItem('replenish_standards_db_v5');
             if (stored) {
                 replenishStandards = JSON.parse(stored);
             } else {
@@ -488,19 +502,42 @@
         }
 
         function saveStandardsToStorage() {
-            localStorage.setItem('replenish_standards_db_v2', JSON.stringify(replenishStandards));
+            localStorage.setItem('replenish_standards_db_v5', JSON.stringify(replenishStandards));
         }
 
         // 初始化加載
         loadStandardsFromStorage();
 
-        // 頁面加載時自動讀取已儲存的 Google Sheet 網址
+        // 頁面加載時自動讀取已儲存的 Google Sheet 網址，並嘗試自動偵測您上傳的「補貨標準.csv」檔案
         window.addEventListener('DOMContentLoaded', () => {
             const savedUrl = localStorage.getItem('google_sheet_csv_url');
             if (savedUrl) {
                 document.getElementById('cloudUrlInput').value = savedUrl;
             }
+            
+            // 🚀 全自動讀取機制：當您把 HTML 放在您 GitHub Pages 或是本地資料夾時，
+            // 只要同一個目錄下有「補貨標準.csv」檔案，網頁載入時就會全自動撈取並加載！
+            autoDetectLocalFile();
         });
+
+        // 全自動讀取本機 CSV 的機制
+        function autoDetectLocalFile() {
+            fetch('補貨標準.csv')
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    }
+                    throw new Error('No default csv in folder');
+                })
+                .then(csvText => {
+                    console.log('成功偵測到同目錄下的 補貨標準.csv，自動加載並比對庫存中...');
+                    dataSourceTag.textContent = `* 數據載入來源: 📁 全自動讀取 (補貨標準.csv)`;
+                    parseCSV(csvText);
+                })
+                .catch(err => {
+                    console.log('未偵測到預載的 補貨標準.csv 檔案。等待方案 A 手動上傳或方案 B 一鍵連線中。');
+                });
+        }
 
         // DOM 元素
         const tabInventory = document.getElementById('tabInventory');
@@ -618,6 +655,9 @@
         const btnClearAllStds = document.getElementById('btnClearAllStds');
         const btnImportStd = document.getElementById('btnImportStd');
         const importStdFile = document.getElementById('importStdFile');
+        const btnExportBackup = document.getElementById('btnExportBackup');
+        const btnTriggerImportBackup = document.getElementById('btnTriggerImportBackup');
+        const backupFileInput = document.getElementById('backupFileInput');
 
         // 表單提交：新增/修改標準 (以代號+單位複合鍵存儲)
         stdForm.addEventListener('submit', (e) => {
@@ -672,6 +712,65 @@
         importStdFile.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 importStandardsFromFile(e.target.files[0]);
+            }
+        });
+
+        // 匯出目前所有的標準 (下載為 JSON 檔案)
+        btnExportBackup.addEventListener('click', () => {
+            try {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(replenishStandards, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                
+                const timeStamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+                downloadAnchor.setAttribute("download", `倉庫補貨標準備份_${timeStamp}.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+                showToast('已成功匯出補貨標準備份檔！您可以將此檔案帶去別台電腦匯入。', 'download', 'text-indigo-400');
+            } catch (err) {
+                showToast(`備份導出失敗: ${err.message}`, 'alert-circle', 'text-rose-400');
+            }
+        });
+
+        // 觸發匯入
+        btnTriggerImportBackup.addEventListener('click', () => {
+            backupFileInput.click();
+        });
+
+        backupFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const importedData = JSON.parse(evt.target.result);
+                        
+                        // 簡單格式校驗，確保匯入的確實是複合鍵標準
+                        let validCount = 0;
+                        for (let key in importedData) {
+                            if (importedData[key].code && importedData[key].unit && importedData[key].refill !== undefined) {
+                                replenishStandards[key] = importedData[key];
+                                validCount++;
+                            }
+                        }
+
+                        if (validCount > 0) {
+                            saveStandardsToStorage();
+                            renderSettingsList();
+                            showToast(`還原成功！已成功同步匯入 ${validCount} 個補貨臨界值。`, 'shield-check', 'text-emerald-400');
+                            if (originalRows.length > 0) {
+                                analyzeInventory();
+                            }
+                        } else {
+                            showToast('匯入失敗：這不是正確的補貨標準備份檔案格式。', 'alert-circle', 'text-rose-400');
+                        }
+                    } catch (err) {
+                        showToast(`還原解析失敗: ${err.message}`, 'alert-circle', 'text-rose-400');
+                    }
+                };
+                reader.readAsText(file);
+                backupFileInput.value = '';
             }
         });
 
@@ -738,7 +837,7 @@
             }
 
             if (colUnit === -1) {
-                showToast('此舊檔案未偵測到「單位」或「庫存單位」欄位，請補齊後再進行匯入學期。', 'alert-circle', 'text-rose-400');
+                showToast('此舊檔案未偵測到「單位」或「庫存單位」欄位，請補齊後再進行匯入。', 'alert-circle', 'text-rose-400');
                 return;
             }
 
@@ -917,6 +1016,7 @@
             dropZone.classList.remove('border-indigo-400', 'bg-indigo-50/50');
         });
 
+        // 接收拖放檔案
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('border-indigo-400', 'bg-indigo-50/50');
@@ -1042,7 +1142,8 @@
                     itemName: headers.findIndex(h => h.includes('品項') && !h.includes('代號') && !h.includes('單位')),
                     unit: headers.findIndex(h => h.includes('單位') || h.includes('庫存單位')),
                     warehouse: headers.findIndex(h => h.includes('倉庫')),
-                    stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量'))
+                    stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量')),
+                    refill: headers.findIndex(h => h.includes('補貨標準')) // 自動讀取 G 欄 補貨標準
                 };
 
                 const colIdx = {
@@ -1051,10 +1152,13 @@
                     itemName: headerMap.itemName !== -1 ? headerMap.itemName : 2,
                     unit: headerMap.unit !== -1 ? headerMap.unit : 3,
                     warehouse: headerMap.warehouse !== -1 ? headerMap.warehouse : 4,
-                    stock: headerMap.stock !== -1 ? headerMap.stock : 5
+                    stock: headerMap.stock !== -1 ? headerMap.stock : 5,
+                    refill: headerMap.refill !== -1 ? headerMap.refill : 6
                 };
 
                 const parsedData = [];
+                let hasRefillUpdated = false;
+
                 for (let i = 1; i < sheetRows.length; i++) {
                     const cells = sheetRows[i];
                     if (!cells || cells.length === 0) continue;
@@ -1062,8 +1166,21 @@
                     const itemCode = cells[colIdx.itemCode] ? String(cells[colIdx.itemCode]).trim() : '';
                     const warehouse = cells[colIdx.warehouse] ? String(cells[colIdx.warehouse]).trim() : '';
                     const unit = cells[colIdx.unit] ? String(cells[colIdx.unit]).trim() : '';
+                    const refillVal = cells[colIdx.refill] !== undefined && cells[colIdx.refill] !== '' ? parseFloat(cells[colIdx.refill]) : null;
 
                     if (itemCode && warehouse) {
+                        // 學習並存儲檔案中的 G 欄補貨標準
+                        if (unit && refillVal !== null && !isNaN(refillVal)) {
+                            const compKey = makeKey(itemCode, unit);
+                            replenishStandards[compKey] = {
+                                name: cells[colIdx.itemName] ? String(cells[colIdx.itemName]).trim() : '品項',
+                                code: itemCode,
+                                unit: unit,
+                                refill: refillVal
+                            };
+                            hasRefillUpdated = true;
+                        }
+
                         if (ALLOWED_WAREHOUSES.includes(warehouse)) {
                             parsedData.push({
                                 category: cells[colIdx.category] !== undefined ? String(cells[colIdx.category]).trim() : '',
@@ -1075,6 +1192,10 @@
                             });
                         }
                     }
+                }
+
+                if (hasRefillUpdated) {
+                    saveStandardsToStorage();
                 }
 
                 if (parsedData.length === 0) {
@@ -1104,7 +1225,8 @@
                     itemName: headers.findIndex(h => h.includes('品項') && !h.includes('代號') && !h.includes('單位')),
                     unit: headers.findIndex(h => h.includes('單位') || h.includes('庫存單位')),
                     warehouse: headers.findIndex(h => h.includes('倉庫')),
-                    stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量'))
+                    stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量')),
+                    refill: headers.findIndex(h => h.includes('補貨標準')) // 自動讀取 G 欄 補貨標準
                 };
 
                 const colIdx = {
@@ -1113,10 +1235,13 @@
                     itemName: headerMap.itemName !== -1 ? headerMap.itemName : 2,
                     unit: headerMap.unit !== -1 ? headerMap.unit : 3,
                     warehouse: headerMap.warehouse !== -1 ? headerMap.warehouse : 4,
-                    stock: headerMap.stock !== -1 ? headerMap.stock : 5
+                    stock: headerMap.stock !== -1 ? headerMap.stock : 5,
+                    refill: headerMap.refill !== -1 ? headerMap.refill : 6
                 };
 
                 const parsedData = [];
+                let hasRefillUpdated = false;
+
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
@@ -1124,11 +1249,26 @@
                     const cells = parseCSVLine(line);
                     if (cells[colIdx.itemCode] && cells[colIdx.warehouse]) {
                         const warehouse = cells[colIdx.warehouse].trim();
+                        const itemCode = cells[colIdx.itemCode].trim();
                         const unit = cells[colIdx.unit] ? cells[colIdx.unit].trim() : '';
+                        const refillVal = cells[colIdx.refill] !== undefined && cells[colIdx.refill] !== '' ? parseFloat(cells[colIdx.refill]) : null;
+
+                        // 學習並存儲檔案中的 G 欄補貨標準
+                        if (unit && refillVal !== null && !isNaN(refillVal)) {
+                            const compKey = makeKey(itemCode, unit);
+                            replenishStandards[compKey] = {
+                                name: cells[colIdx.itemName] ? cells[colIdx.itemName].trim() : '品項',
+                                code: itemCode,
+                                unit: unit,
+                                refill: refillVal
+                            };
+                            hasRefillUpdated = true;
+                        }
+
                         if (ALLOWED_WAREHOUSES.includes(warehouse)) {
                             parsedData.push({
                                 category: cells[colIdx.category] || '',
-                                itemCode: cells[colIdx.itemCode].trim(),
+                                itemCode: itemCode,
                                 itemName: cells[colIdx.itemName] || '',
                                 unit: unit,
                                 warehouse: warehouse,
@@ -1136,6 +1276,10 @@
                             });
                         }
                     }
+                }
+
+                if (hasRefillUpdated) {
+                    saveStandardsToStorage();
                 }
 
                 if (parsedData.length === 0) throw new Error('找不到指定三倉的庫存。');
