@@ -211,6 +211,27 @@
                 <p id="loadingStatusText" class="text-slate-500 text-sm">正在套用內建補貨標準並計算補貨狀態...</p>
             </div>
 
+            <!-- 全能安全庫存大看板 (當不需要補貨時顯示) -->
+            <div id="allSafeCelebration" class="hidden bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-12 text-center text-white shadow-xl max-w-4xl mx-auto flex flex-col items-center justify-center space-y-6 transform hover:scale-[1.01] transition-transform duration-300">
+                <div class="p-6 bg-white/20 rounded-full animate-bounce">
+                    <i data-lucide="shield-check" class="w-20 h-20 text-white"></i>
+                </div>
+                <div class="space-y-2">
+                    <h2 class="text-4xl md:text-5xl font-black tracking-wider leading-tight drop-shadow-md">
+                        恭喜你，已達安全庫存量，不用補貨
+                    </h2>
+                    <p class="text-emerald-100 text-base md:text-lg font-medium">
+                        目前理貨倉所有指定商品均在庫充足，且後援系統運作正常！🎉
+                    </p>
+                </div>
+                <div class="pt-2">
+                    <button onclick="switchFilterToAll()" class="px-6 py-2.5 bg-white/10 hover:bg-white/20 active:bg-white/30 border border-white/20 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1.5 mx-auto">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                        <span>查看限定四倉全部資料</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- 主要表格呈現區 (預設隱藏) -->
             <div id="tableContainer" class="hidden bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="overflow-x-auto">
@@ -1022,6 +1043,9 @@
         const statReplenish = document.getElementById('statReplenish');
         const statNoStandard = document.getElementById('statNoStandard');
 
+        // 安全庫存大看板 DOM
+        const allSafeCelebration = document.getElementById('allSafeCelebration');
+
         let originalRows = []; // 四個特定倉庫的所有列
         let processedRows = []; // 結合內建補貨標準後的資料
         let currentFilter = 'replenish'; 
@@ -1159,6 +1183,7 @@
                 tableContainer.classList.add('hidden');
                 statsContainer.classList.add('hidden');
                 filterContainer.classList.add('hidden');
+                allSafeCelebration.classList.add('hidden'); // 載入時先隱藏安全大看板
             } else {
                 loadingStatus.classList.add('hidden');
             }
@@ -1410,11 +1435,31 @@
             updateStatsAndUI();
             showLoading(false);
             
-            tableContainer.classList.remove('hidden');
             statsContainer.classList.remove('hidden');
             filterContainer.classList.remove('hidden');
             
+            // 🚀 全能安全庫存大看板條件觸發判斷
+            const replenishCount = processedRows.filter(r => r.needReplenish).length;
+            if (replenishCount === 0) {
+                // 如果需要補貨的商品數為 0，隱藏表格、呈現慶祝大看板！
+                tableContainer.classList.add('hidden');
+                allSafeCelebration.classList.remove('hidden');
+            } else {
+                // 有品項需要補貨，隱藏慶祝大看板、顯示比對表格
+                allSafeCelebration.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+            }
+            
             showToast(`成功自動對應 ${originalRows.length} 筆指定四倉庫存資料`, 'check', 'text-emerald-400');
+        }
+
+        // 當點擊大看板中的按鈕時，自動切換至「全部資料」
+        window.switchFilterToAll = function() {
+            allSafeCelebration.classList.add('hidden');
+            tableContainer.classList.remove('hidden');
+            
+            // 觸發「限定四倉全部資料」按鈕點擊事件
+            btnAll.click();
         }
 
         // 更新數據看板
@@ -1604,6 +1649,11 @@
             btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-900 text-white transition-colors";
             btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-rose-600 hover:bg-rose-50 transition-colors flex items-center";
             btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center";
+            
+            // 只要切換到全部資料篩選，就確保表格可見，隱藏慶祝大看板
+            allSafeCelebration.classList.add('hidden');
+            tableContainer.classList.remove('hidden');
+            
             renderTable();
         });
 
@@ -1612,6 +1662,17 @@
             btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors";
             btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-rose-600 text-white transition-colors flex items-center";
             btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center";
+            
+            // 如果重新點選僅看需補貨，則依照補貨數決定是否呈現慶祝看板
+            const replenishCount = processedRows.filter(r => r.needReplenish).length;
+            if (replenishCount === 0) {
+                tableContainer.classList.add('hidden');
+                allSafeCelebration.classList.remove('hidden');
+            } else {
+                allSafeCelebration.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+            }
+            
             renderTable();
         });
 
@@ -1620,6 +1681,11 @@
             btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors";
             btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-rose-600 hover:bg-rose-50 transition-colors flex items-center";
             btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-amber-600 text-white transition-colors flex items-center";
+            
+            // 切換至未設定標準，隱藏慶祝看板，顯現表格
+            allSafeCelebration.classList.add('hidden');
+            tableContainer.classList.remove('hidden');
+            
             renderTable();
         });
 
