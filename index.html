@@ -223,6 +223,10 @@
                     <p class="text-emerald-100 text-base md:text-lg font-medium">
                         目前理貨倉所有指定商品均在庫充足，且後援系統運作正常！🎉
                     </p>
+                    <!-- 🕒 新增：同步顯示當前核對日期與時間 -->
+                    <p class="text-[14px] text-emerald-200/90 font-mono bg-emerald-800/40 px-4 py-2 rounded-full border border-emerald-500/20 inline-block">
+                        系統核對時間：<span id="celebrationTime" class="font-bold">載入中...</span>
+                    </p>
                 </div>
                 <div class="pt-2">
                     <button onclick="switchFilterToAll()" class="px-6 py-2.5 bg-white/10 hover:bg-white/20 active:bg-white/30 border border-white/20 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1.5 mx-auto">
@@ -305,7 +309,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">品項名稱 C欄 (選填)</label>
-                            <input type="text" id="formItemName" placeholder="placeholder" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <input type="text" id="formItemName" placeholder="例如：香菇" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">補貨標準數量 G欄 (必填)</label>
@@ -337,12 +341,12 @@
                             </p>
                         </div>
                         <div class="flex flex-col gap-2 justify-center items-center md:items-end">
-                            <div class="flex gap-2">
-                                <button id="btnExportBackup" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-3.5 py-2 rounded-lg text-xs transition-colors border border-indigo-200 flex items-center space-x-1">
+                            <div class="flex flex-wrap gap-2 justify-end">
+                                <button id="btnExportBackup" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-2 rounded-lg text-xs transition-colors border border-indigo-200 flex items-center space-x-1">
                                     <i data-lucide="download" class="w-3.5 h-3.5"></i>
                                     <span>匯出標準備份 (.json)</span>
                                 </button>
-                                <button id="btnTriggerImportBackup" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3.5 py-2 rounded-lg text-xs transition-colors border border-slate-200 flex items-center space-x-1">
+                                <button id="btnTriggerImportBackup" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-lg text-xs transition-colors border border-slate-200 flex items-center space-x-1">
                                     <i data-lucide="upload" class="w-3.5 h-3.5"></i>
                                     <span>匯入標準備份</span>
                                 </button>
@@ -352,24 +356,31 @@
                         </div>
                     </div>
 
-                    <!-- 批次匯入功能 -->
+                    <!-- 批次匯入功能與程式重置 -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-950 flex items-center mb-1">
+                        <div class="space-y-2">
+                            <h3 class="text-sm font-bold text-slate-950 flex items-center">
                                 <i data-lucide="refresh-cw" class="w-4 h-4 text-emerald-500 mr-1.5"></i>
-                                一鍵匯入舊檔標準
+                                批次匯入與程式重置
                             </h3>
                             <p class="text-xs text-slate-500 leading-relaxed">
-                                上傳包含「補貨標準」及「單位」欄位的舊 Excel/CSV 檔案，系統會自動學習各品項<b>「代號+單位」</b>的對應標準並存入本機！
+                                <b>程式碼標準更新：</b>當您在 GitHub Pages 修改了網頁程式碼的 DEFAULT_STANDARDS，請點擊右邊一鍵重設，以防瀏覽器快取殘留舊標準。
                             </p>
                         </div>
-                        <div class="flex flex-col justify-center items-center md:items-end">
+                        <div class="flex flex-col gap-2 justify-center items-center md:items-end">
+                            <div class="flex flex-wrap gap-2 justify-end">
+                                <!-- 🆕 新增：重置為程式碼預設標準（解決 LocalStorage 刷新沒反應的 Bug） -->
+                                <button id="btnResetToDefaults" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold px-3.5 py-2.5 rounded-xl text-xs transition-colors border border-rose-200 flex items-center space-x-1">
+                                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                    <span>重置為程式碼預設標準</span>
+                                </button>
+                                <button id="btnImportStd" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors shadow-sm flex items-center space-x-1.5">
+                                    <i data-lucide="import" class="w-4 h-4"></i>
+                                    <span>上傳舊檔自動學習</span>
+                                </button>
+                            </div>
                             <input type="file" id="importStdFile" accept=".xlsx, .xls, .csv" class="hidden">
-                            <button id="btnImportStd" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors shadow-sm flex items-center space-x-2">
-                                <i data-lucide="import" class="w-4 h-4"></i>
-                                <span>上傳舊檔自動學習</span>
-                            </button>
-                            <p class="text-[10px] text-slate-400 mt-1.5">將根據「代號 + 單位」精準建立補貨標準</p>
+                            <p class="text-[10px] text-slate-400">將根據「代號 + 單位」精準建立補貨標準</p>
                         </div>
                     </div>
 
@@ -470,6 +481,7 @@
         // 即時時鐘功能
         function initClock() {
             const clockEl = document.getElementById('liveClock');
+            const celebrationTimeEl = document.getElementById('celebrationTime'); // 🆕 時效性特效時鐘元素
             
             function updateClock() {
                 const now = new Date();
@@ -482,7 +494,11 @@
                 const days = ['日', '一', '二', '三', '四', '五', '六'];
                 const dayOfWeek = days[now.getDay()];
                 
-                clockEl.textContent = `${year}/${month}/${date} (星期${dayOfWeek}) ${hours}:${minutes}:${seconds}`;
+                const timeStr = `${year}/${month}/${date} (星期${dayOfWeek}) ${hours}:${minutes}:${seconds}`;
+                clockEl.textContent = timeStr;
+                if (celebrationTimeEl) {
+                    celebrationTimeEl.textContent = timeStr; // 🆕 在不用補貨特效內同步顯示
+                }
             }
             
             updateClock();
@@ -632,7 +648,7 @@
                 });
         }
 
-        // 自動讀取雲端預設網址的機制
+        // 自動讀取雲端預設網址的機制 (加入防瀏覽器快取 URL 戳記)
         function autoFetchCloudOnLoad(url) {
             if (!url) {
                 autoDetectLocalFile();
@@ -642,7 +658,10 @@
             loadingStatusText.textContent = "正在與預設 Google Sheet 建立連線、自動讀取最新結餘中...";
             showLoading(true);
             
-            fetch(url)
+            // 🛡️ 解決卡住/舊資料 Bug：在網址尾端動態注入時間戳參數 `&t=12345`，徹底摧毀瀏覽器對 Google Sheets CSV 的快取
+            const busterUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+
+            fetch(busterUrl)
                 .then(response => {
                     if (!response.ok) throw new Error('雲端網址讀取失敗');
                     return response.text();
@@ -660,7 +679,7 @@
 
         // 全自動讀取本機 CSV 的機制
         function autoDetectLocalFile() {
-            fetch('補貨標準.csv')
+            fetch('補貨標準.csv?t=' + new Date().getTime()) // 加入 cache buster
                 .then(response => {
                     if (response.ok) {
                         return response.text();
@@ -796,6 +815,7 @@
         const btnExportBackup = document.getElementById('btnExportBackup');
         const btnTriggerImportBackup = document.getElementById('btnTriggerImportBackup');
         const backupFileInput = document.getElementById('backupFileInput');
+        const btnResetToDefaults = document.getElementById('btnResetToDefaults');
 
         // 表單提交：新增/修改標準 (以代號+單位複合鍵存儲)
         stdForm.addEventListener('submit', (e) => {
@@ -850,6 +870,19 @@
         importStdFile.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 importStandardsFromFile(e.target.files[0]);
+            }
+        });
+
+        // 🆕 解決 LocalStorage 刷新舊標準沒變的 Bug：重設本機資料為網頁原始碼內建的 DEFAULT_STANDARDS
+        btnResetToDefaults.addEventListener('click', () => {
+            if (confirm('確定要一鍵重置本機標準，同步回網頁程式碼所寫的補貨標準嗎？您的自訂變更將被內建標準覆蓋！')) {
+                replenishStandards = JSON.parse(JSON.stringify(DEFAULT_STANDARDS)); // 乾淨複製一份
+                saveStandardsToStorage();
+                renderSettingsList();
+                showToast('已成功強制同步本機快取，重置為程式碼預設標準！', 'rotate-ccw', 'text-emerald-400');
+                if (originalRows.length > 0) {
+                    analyzeInventory();
+                }
             }
         });
 
@@ -1137,7 +1170,7 @@
         }
 
         // ==========================================
-        // 🚀 一鍵連結 Google Sheet / ERP 即時同步
+        // 🚀 一鍵連結 Google Sheet / ERP 即時同步 (Cache Buster)
         // ==========================================
         btnSyncCloud.addEventListener('click', () => {
             const targetUrl = cloudUrlInput.value.trim();
@@ -1156,8 +1189,10 @@
             loadingStatusText.textContent = "正在與 Google Sheet 建立加密連線、拉取每 30 秒最新結餘中...";
             showLoading(true);
 
-            // 使用 Fetch API 直接讀取 CSV 內容
-            fetch(targetUrl)
+            // 🛡️ 解決卡住/舊資料 Bug：在手動點擊同步時，也動態注入時間戳參數 `&t=12345`，徹底摧毀瀏覽器對 Google Sheets CSV 的快取
+            const busterUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+
+            fetch(busterUrl)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('無法讀取該網址，請確認您的 Google 試算表是否已公開且格式正確。');
