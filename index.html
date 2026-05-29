@@ -28,7 +28,7 @@
                     <h1 class="text-xl font-bold tracking-tight">倉庫智慧補貨檢視系統</h1>
                     <div class="flex flex-wrap items-center gap-2 mt-1">
                         <span class="text-xs text-indigo-200">專屬客製化模式 • 免維護 Excel 補貨標準欄</span>
-                        <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定四倉比對模式 (63-6上下層 / 63-7 / 低溫倉)</span>
+                        <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定四倉比對模式 (63-6上下層 / 63-7 / 63-5低溫倉)</span>
                     </div>
                 </div>
             </div>
@@ -82,7 +82,7 @@
                             </li>
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
-                                <span><b>後援檢查：</b>確認<b>「63-7倉」</b>、<b>「63-6倉/上層」</b>或<b>「低溫倉」</b>是否有大於 0 的庫存可以支援。</span>
+                                <span><b>後援檢查：</b>確認<b>「63-7倉」</b>、<b>「63-6倉/上層」</b>或<b>「63-5倉/低溫倉」</b>是否有大於 0 的庫存可以支援。</span>
                             </li>
                         </ul>
                     </div>
@@ -238,7 +238,7 @@
                     <div id="dataSourceTag">* 數據載入來源: 尚未加載</div>
                     <div class="flex items-center space-x-1">
                         <span class="w-3 h-3 bg-rose-100 border border-rose-300 rounded"></span>
-                        <span>紅色底：符合補貨標準 (下層不足，且上層/63-7倉/低溫倉有庫存可補)</span>
+                        <span>紅色底：符合補貨標準 (下層不足，且上層/63-7倉/63-5低溫倉有庫存可補)</span>
                     </div>
                 </div>
             </div>
@@ -471,15 +471,15 @@
         // 啟動時鐘
         initClock();
 
-        // 指定要篩選與統計的 4 個倉庫 (新增 '低溫倉')
+        // 指定要篩選與統計的 4 個倉庫 (修正特定倉庫名稱 '63-5倉/低溫倉')
         const ALLOWED_WAREHOUSES = [
             "63-6倉/下層/理貨倉",
             "63-6倉/上層",
             "63-7倉",
-            "低溫倉"
+            "63-5倉/低溫倉"
         ];
 
-        // 輔助函式：建立代號 + 單位的唯一 Key (不分大小寫與多餘空格)
+        // 輔支函式：建立代號 + 單位的唯一 Key (不分大小寫與多餘空格)
         function makeKey(code, unit) {
             return `${String(code || '').trim().toUpperCase()}_${String(unit || '').trim().toUpperCase()}`;
         }
@@ -521,9 +521,7 @@
             "A110A0101_KG": { "name": "黑蠔菇A", "code": "A110A0101", "unit": "kg", "refill": 240 },
             "A110A0303_盒": { "name": "有機黑蠔菇A［盒裝］", "code": "A110A0303", "unit": "盒", "refill": 864 },
             "A120A0101_KG": { "name": "白精靈菇A", "code": "A120A0101", "unit": "kg", "refill": 160 },
-            "A13000302_包": { "name": "有機完株金滑菇", "code": "A13000302", "unit": "包", "refill": 120 },
-            "A140A0101_600G/包": { "name": "鮑魚菇A", "code": "A140A0101", "unit": "600g/包", "refill": 60 },
-            "A15000101_包": { "name": "好菇道舞菇", "code": "A15000101", "unit": "包", "refill": 60 },
+            "A13000302_包": { "name": "有機完株金滑菇", "code": "A13000302", "unit": "包", "refill": 60 },
             "A160A0301_150G/包": { "name": "有機柳松菇A", "code": "A160A0301", "unit": "150g/包", "refill": 108 },
             "A18000101_600G/包": { "name": "珊瑚菇", "code": "A18000101", "unit": "600g/包", "refill": 60 },
             "A290A0102_KG": { "name": "韓小菇A", "code": "A290A0102", "unit": "kg", "refill": 12 },
@@ -968,101 +966,7 @@
             }
         }
 
-        // 渲染補貨標準列表
-        function renderSettingsList() {
-            stdTableBody.innerHTML = '';
-            const query = searchStdInput.value.trim().toLowerCase();
-            
-            let sortedKeys = Object.keys(replenishStandards).sort();
-            let displayCount = 0;
-
-            sortedKeys.forEach(compositeKey => {
-                const item = replenishStandards[compositeKey];
-                
-                // 多欄位模糊過濾
-                if (query && 
-                    !item.code.toLowerCase().includes(query) && 
-                    !item.unit.toLowerCase().includes(query) && 
-                    !item.name.toLowerCase().includes(query)) {
-                    return; 
-                }
-
-                displayCount++;
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors";
-                tr.innerHTML = `
-                    <td class="px-6 py-3 font-mono font-semibold text-slate-800">${item.code}</td>
-                    <td class="px-6 py-3 text-slate-500 font-medium">${item.unit}</td>
-                    <td class="px-6 py-3 text-slate-600">${item.name}</td>
-                    <td class="px-6 py-3 text-right font-mono font-bold text-indigo-600">${item.refill}</td>
-                    <td class="px-6 py-3 text-center space-x-1">
-                        <button onclick="editStd('${compositeKey}')" class="text-indigo-600 hover:text-indigo-900 font-medium px-2 py-1 rounded hover:bg-indigo-50">修改</button>
-                        <button onclick="deleteStd('${compositeKey}')" class="text-rose-600 hover:text-rose-900 font-medium px-2 py-1 rounded hover:bg-rose-50">刪除</button>
-                    </td>
-                `;
-                stdTableBody.appendChild(tr);
-            });
-
-            stdCountText.textContent = Object.keys(replenishStandards).length;
-
-            if (displayCount === 0) {
-                stdTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-slate-400">
-                            沒有找到符合的補貨標準，請新增或匯入。
-                        </td>
-                    </tr>
-                `;
-            }
-            lucide.createIcons();
-        }
-
-        // 修改/編輯標準
-        window.editStd = function(compositeKey) {
-            const item = replenishStandards[compositeKey];
-            if (item) {
-                formItemCode.value = item.code;
-                formItemCode.setAttribute('readonly', true); // 防止修改代號
-                formUnit.value = item.unit;
-                formUnit.setAttribute('readonly', true); // 防止修改單位
-                formItemName.value = item.name;
-                formRefill.value = item.refill;
-                document.getElementById('formTitle').textContent = `正在修改: ${item.code} (${item.unit})`;
-                formRefill.focus();
-                showToast(`已載入 ${item.code} (${item.unit}) 設定，請在左側修改標準數量後點選儲存`, 'info', 'text-sky-400');
-            }
-        };
-
-        // 刪除個別標準
-        window.deleteStd = function(compositeKey) {
-            const item = replenishStandards[compositeKey];
-            if (!item) return;
-            if (confirm(`確定要刪除品項 [ ${item.code} ] 單位為 [ ${item.unit} ] 的補貨標準設定嗎？`)) {
-                delete replenishStandards[compositeKey];
-                saveStandardsToStorage();
-                renderSettingsList();
-                showToast(`已刪除品項 ${item.code} (${item.unit}) 的補貨標準`, 'trash', 'text-rose-400');
-                if (originalRows.length > 0) {
-                    analyzeInventory();
-                }
-            }
-        };
-
-        // 清空所有內建標準
-        btnClearAllStds.addEventListener('click', () => {
-            if (confirm('警告！這將會清除您目前在瀏覽器內建立的所有補貨標準。確定要全部清空嗎？')) {
-                replenishStandards = {};
-                saveStandardsToStorage();
-                renderSettingsList();
-                showToast('已清空所有補貨標準！', 'trash', 'text-rose-400');
-                if (originalRows.length > 0) {
-                    analyzeInventory();
-                }
-            }
-        });
-
-
-        // --- 庫存主系統 JS 邏輯 (整合內建標準) ---
+        // 核心庫存主系統 JS 邏輯 (整合內建標準)
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const emptyState = document.getElementById('emptyState');
@@ -1397,7 +1301,7 @@
             return r.map(cell => cell.replace(/^"(.*)"$/, '$1').trim());
         }
 
-        // 核心計算：整合內建補貨標準 (採用 代號+單位 精準校對，新增比對低溫倉後援)
+        // 核心計算：整合內建補貨標準 (採用 代號+單位 精準校對，新增比對63-5倉/低溫倉後援)
         function analyzeInventory() {
             // 建立 4 倉即時對照：必須細分至複合主鍵，因為多單位存在
             const inventoryLookup = {};
@@ -1429,10 +1333,10 @@
                 if (row.warehouse === "63-6倉/下層/理貨倉") {
                     if (refillLimit !== null) {
                         if (row.stock < refillLimit) {
-                            // 檢查 63-7、63-6上層 與 低溫倉 後援在庫狀態 (以對應同代號、同單位為準)
+                            // 檢查 63-7、63-6上層 與 63-5倉/低溫倉 後援在庫狀態 (以對應同代號、同單位為準)
                             const stockIn7 = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["63-7倉"]) || 0;
                             const stockIn6Upper = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["63-6倉/上層"]) || 0;
-                            const stockInLowTemp = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["低溫倉"]) || 0; // 新增低溫倉檢查
+                            const stockInLowTemp = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["63-5倉/低溫倉"]) || 0; // 修正精準對應倉庫名為 63-5倉/低溫倉
 
                             if (stockIn7 > 0 || stockIn6Upper > 0 || stockInLowTemp > 0) {
                                 needReplenish = true;
@@ -1444,7 +1348,7 @@
                                     backups.push(`上層倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockIn6Upper}</span>`);
                                 }
                                 if (stockInLowTemp > 0) {
-                                    backups.push(`低溫倉: <span class="text-fuchsia-800 bg-fuchsia-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockInLowTemp}</span>`); // 低溫倉顯示樣式
+                                    backups.push(`63-5低溫倉: <span class="text-fuchsia-800 bg-fuchsia-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockInLowTemp}</span>`); // 低溫倉顯示樣式
                                 }
                                 backupStockInfo = backups.join(' / ');
                             }
@@ -1613,7 +1517,7 @@
                             ? 'bg-sky-50 text-sky-800 border border-sky-200'
                             : row.warehouse === '63-7倉'
                             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : 'bg-fuchsia-50 text-fuchsia-800 border border-fuchsia-200' /* 低溫倉專屬徽章 */
+                            : 'bg-fuchsia-50 text-fuchsia-800 border border-fuchsia-200' /* 63-5倉/低溫倉專屬徽章 */
                         }">
                             ${row.warehouse}
                         </span>
