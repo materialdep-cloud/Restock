@@ -479,7 +479,7 @@
             "63-5倉/低溫倉"
         ];
 
-        // 輔支函式：建立代號 + 單位的唯一 Key (不分大小寫與多餘空格)
+        // 輔助函式：建立代號 + 單位的唯一 Key (不分大小寫與多餘空格)
         function makeKey(code, unit) {
             return `${String(code || '').trim().toUpperCase()}_${String(unit || '').trim().toUpperCase()}`;
         }
@@ -494,7 +494,7 @@
             "A0201B101_600G/包/大發": { "name": "杏鮑菇B+", "code": "A0201B101", "unit": "600g/包/大發", "refill": 150 },
             "A0201D101_KG": { "name": "杏鮑菇大D", "code": "A0201D101", "unit": "kg", "refill": 90 },
             "A020A0101_KG": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg", "refill": 800 },
-            "A020A0101_KG/大發": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/大發", "refill": 80 },
+            "A020A0101_KG/大發": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/大發", "refill": 160 },
             "A020A0101_KG/威蕈多": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/威蕈多", "refill": 80 },
             "A020A0301_300G/盒": { "name": "有機杏鮑菇A", "code": "A020A0301", "unit": "300g/盒", "refill": 72 },
             "A020B0101_KG": { "name": "杏鮑菇B", "code": "A020B0101", "unit": "kg", "refill": 540 },
@@ -514,7 +514,7 @@
             "A060A0101_KG": { "name": "鴻喜菇A", "code": "A060A0101", "unit": "kg", "refill": 48 },
             "A060B0101_KG": { "name": "鴻喜菇B", "code": "A060B0101", "unit": "kg", "refill": 450 },
             "A07000302_包": { "name": "好菇道有機雪白菇", "code": "A07000302", "unit": "包", "refill": 1890 },
-            "A070B0101_KG": { "name": "雪白菇B", "code": "A070B0101", "unit": "kg", "refill": 240 },
+            "A070B0101_KG": { "name": "雪白菇B", "code": "A070B0101", "unit": "kg", "refill": 400 },
             "A090A0101_KG": { "name": "秀珍菇A", "code": "A090A0101", "unit": "kg", "refill": 450 },
             "A100A0101_200G/盒": { "name": "霸王洋菇", "code": "A100A0101", "unit": "200g/盒", "refill": 100 },
             "A100B0101_200G/盒": { "name": "洋菇 ［盒裝］", "code": "A100B0101", "unit": "200g/盒", "refill": 100 },
@@ -571,14 +571,17 @@
 
         // 頁面加載時自動讀取已儲存的 Google Sheet 網址，並嘗試自動偵測您上傳的「補貨標準.csv」檔案
         window.addEventListener('DOMContentLoaded', () => {
+            const defaultUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRqhij3tYIKCP5YwznxO0uCrthJDE09xE8pOG76mejZDrH6xFyPRndBKnx9UBwQmnxxyvcE9vUUZJqk/pub?gid=322034433&single=true&output=csv";
             const savedUrl = localStorage.getItem('google_sheet_csv_url');
-            if (savedUrl) {
-                document.getElementById('cloudUrlInput').value = savedUrl;
-            }
+            const finalUrl = savedUrl || defaultUrl;
+            
+            document.getElementById('cloudUrlInput').value = finalUrl;
             
             // 🚀 全自動偵測 JSON 備份檔與 CSV 機制
             autoLoadBackupJson();
-            autoDetectLocalFile();
+            
+            // 優先讀取雲端預設網址，如果成功抓到，就不需要讀取本機「補貨標準.csv」了
+            autoFetchCloudOnLoad(finalUrl);
         });
 
         // 🚀 全自動載入與合併上傳的 JSON 備份檔
@@ -605,6 +608,32 @@
                 })
                 .catch(err => {
                     console.log('未偵測到預載 JSON 備份檔，將採用代碼內建之 DEFAULT_STANDARDS。');
+                });
+        }
+
+        // 自動讀取雲端預設網址的機制
+        function autoFetchCloudOnLoad(url) {
+            if (!url) {
+                autoDetectLocalFile();
+                return;
+            }
+            dataSourceTag.textContent = `* 數據載入來源: 🌐 Google Sheet 雲端實時更新 (預設網址自動讀取)`;
+            loadingStatusText.textContent = "正在與預設 Google Sheet 建立連線、自動讀取最新結餘中...";
+            showLoading(true);
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('雲端網址讀取失敗');
+                    return response.text();
+                })
+                .then(csvText => {
+                    parseCSV(csvText);
+                    showToast('已成功自動同步預設雲端庫存資料！', 'shield-check', 'text-emerald-400');
+                })
+                .catch(err => {
+                    console.log('預設雲端資料自動載入失敗，嘗試讀取本機「補貨標準.csv」...', err);
+                    showLoading(false);
+                    autoDetectLocalFile();
                 });
         }
 
@@ -1006,6 +1035,16 @@
             dropZone.classList.add('border-indigo-400', 'bg-indigo-50/50');
         });
 
+        // 輔助清洗千分位逗號工具
+        function cleanFloat(val) {
+            if (val === undefined || val === null || val === '') return null;
+            if (typeof val === 'number') return val;
+            // 先將值轉為字串，並移除其中所有的逗號
+            const cleaned = String(val).replace(/,/g, '').trim();
+            const parsed = parseFloat(cleaned);
+            return isNaN(parsed) ? null : parsed;
+        }
+
         dropZone.addEventListener('dragleave', () => {
             dropZone.classList.remove('border-indigo-400', 'bg-indigo-50/50');
         });
@@ -1160,7 +1199,7 @@
                     const itemCode = cells[colIdx.itemCode] ? String(cells[colIdx.itemCode]).trim() : '';
                     const warehouse = cells[colIdx.warehouse] ? String(cells[colIdx.warehouse]).trim() : '';
                     const unit = cells[colIdx.unit] ? String(cells[colIdx.unit]).trim() : '';
-                    const refillVal = cells[colIdx.refill] !== undefined && cells[colIdx.refill] !== '' ? parseFloat(cells[colIdx.refill]) : null;
+                    const refillVal = cells[colIdx.refill] !== undefined && cells[colIdx.refill] !== '' ? cleanFloat(cells[colIdx.refill]) : null;
 
                     if (itemCode && warehouse) {
                         // 學習並存儲檔案中的 G 欄補貨標準
@@ -1182,7 +1221,7 @@
                                 itemName: cells[colIdx.itemName] !== undefined ? String(cells[colIdx.itemName]).trim() : '',
                                 unit: unit,
                                 warehouse: warehouse,
-                                stock: parseFloat(cells[colIdx.stock]) || 0
+                                stock: cleanFloat(cells[colIdx.stock]) || 0
                             });
                         }
                     }
@@ -1245,7 +1284,7 @@
                         const warehouse = cells[colIdx.warehouse].trim();
                         const itemCode = cells[colIdx.itemCode].trim();
                         const unit = cells[colIdx.unit] ? cells[colIdx.unit].trim() : '';
-                        const refillVal = cells[colIdx.refill] !== undefined && cells[colIdx.refill] !== '' ? parseFloat(cells[colIdx.refill]) : null;
+                        const refillVal = cells[colIdx.refill] !== undefined && cells[colIdx.refill] !== '' ? cleanFloat(cells[colIdx.refill]) : null;
 
                         // 學習並存儲檔案中的 G 欄補貨標準
                         if (unit && refillVal !== null && !isNaN(refillVal)) {
@@ -1266,7 +1305,7 @@
                                 itemName: cells[colIdx.itemName] || '',
                                 unit: unit,
                                 warehouse: warehouse,
-                                stock: parseFloat(cells[colIdx.stock]) || 0
+                                stock: cleanFloat(cells[colIdx.stock]) || 0
                             });
                         }
                     }
