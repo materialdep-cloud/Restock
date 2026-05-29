@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>倉庫庫存與補貨檢視系統</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- SheetJS (XLSX) 用於直接解析 Excel 檔案 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
+
+    <!-- 導航欄 -->
+    <header class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="package-search" class="w-8 h-8 text-indigo-200"></i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">倉庫智慧補貨檢視系統</h1>
+                    <div class="flex flex-wrap items-center gap-2 mt-1">
+                        <span class="text-xs text-indigo-200">內建標準模式 • 免維護 Excel 補貨標準欄</span>
+                        <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定三倉比對模式</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右側即時日期時間顯示與分頁切換 -->
+            <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto justify-end">
+                <!-- 動態時間顯示區 -->
+                <div class="bg-indigo-700/40 px-4 py-2 rounded-xl border border-indigo-500/30 flex items-center space-x-2 text-sm font-medium shrink-0">
+                    <i data-lucide="clock" class="w-4 h-4 text-indigo-200 animate-pulse"></i>
+                    <span id="liveClock" class="font-mono tracking-wider text-indigo-50">載入時間中...</span>
+                </div>
+
+                <!-- 分頁切換按鈕 -->
+                <div class="bg-indigo-700/60 p-1.5 rounded-xl flex space-x-1 border border-indigo-500/30 shrink-0">
+                    <button id="tabInventory" class="px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-sm transition-all flex items-center">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 mr-1.5"></i>
+                        庫存檢視比對
+                    </button>
+                    <button id="tabSettings" class="px-4 py-1.5 rounded-lg text-sm font-semibold text-indigo-100 hover:text-white hover:bg-indigo-600/50 transition-all flex items-center">
+                        <i data-lucide="sliders" class="w-4 h-4 mr-1.5"></i>
+                        補貨標準管理
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 w-full">
+        
+        <!-- 分頁一：庫存檢視比對 -->
+        <section id="sectInventory" class="space-y-6">
+            
+            <!-- 說明與上傳區 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- 規則說明卡片 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center">
+                            <i data-lucide="info" class="w-5 h-5 text-indigo-500 mr-2"></i>
+                            系統比對機制 (限定三倉)
+                        </h3>
+                        <ul class="space-y-2.5 text-sm text-slate-600">
+                            <li class="flex items-start">
+                                <span class="text-indigo-500 mr-1.5">•</span>
+                                <span><b>自動對應：</b>系統會比對品項代號，自動套用您在網頁中設定的「補貨標準」。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-indigo-500 mr-1.5">•</span>
+                                <span><b>補貨判定：</b>當<b>「63-6倉/下層/理貨倉」</b>庫存量低於補貨標準時。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-indigo-500 mr-1.5">•</span>
+                                <span><b>後援檢查：</b>確認<b>「63-7倉」</b>或<b>「63-6倉/上層」</b>是否有大於 0 的庫存可以支援。</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 text-xs text-rose-500 font-medium flex items-center">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 mr-1"></i>
+                        滿足以上條件，該列將自動底色反紅提醒補貨。
+                    </div>
+                </div>
+
+                <!-- 上傳區域 -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
+                    <div id="dropZone" class="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-xl p-8 text-center cursor-pointer transition-colors group">
+                        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden">
+                        <div class="flex flex-col items-center">
+                            <div class="p-3 bg-indigo-50 rounded-full text-indigo-500 group-hover:scale-110 transition-transform mb-3">
+                                <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+                            </div>
+                            <p class="text-sm font-semibold text-slate-700 mb-1">拖曳您的 Excel 檔 (.xlsx/.xls) 或 CSV 檔案至此處</p>
+                            <p class="text-xs text-slate-400 mb-3">或者點擊此處瀏覽電腦檔案</p>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                支援直接上傳！無須包含「補貨標準」欄位
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 數據統計區 (預設隱藏) -->
+            <div id="statsContainer" class="hidden grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
+                    <div class="p-3 bg-blue-50 text-blue-500 rounded-lg">
+                        <i data-lucide="database" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">指定三倉總筆數</div>
+                        <div id="statTotal" class="text-2xl font-bold text-slate-800">-</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
+                    <div class="p-3 bg-purple-50 text-purple-500 rounded-lg">
+                        <i data-lucide="tag" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">不重複品項數</div>
+                        <div id="statItems" class="text-2xl font-bold text-slate-800">-</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
+                    <div class="p-3 bg-rose-50 text-rose-500 rounded-lg">
+                        <i data-lucide="bell" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">需要補貨品項數</div>
+                        <div id="statReplenish" class="text-2xl font-bold text-rose-600">-</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
+                    <div class="p-3 bg-amber-50 text-amber-500 rounded-lg">
+                        <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-medium">未設定補貨標準品項</div>
+                        <div id="statNoStandard" class="text-2xl font-bold text-amber-600">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 功能與過濾操作區 (預設隱藏) -->
+            <div id="filterContainer" class="hidden bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex flex-wrap gap-2 items-center">
+                    <button id="btnAll" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                        限定三倉全部資料
+                    </button>
+                    <button id="btnReplenishOnly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-rose-600 text-white transition-colors flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-white mr-2"></span>
+                        僅看需補貨項目 (<span id="btnReplenishCount">0</span>)
+                    </button>
+                    <button id="btnNoStdOnly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
+                        未設定補貨標準的品項 (<span id="btnNoStdCount">0</span>)
+                    </button>
+                </div>
+                <div class="relative w-full md:w-72">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </span>
+                    <input type="text" id="searchInput" placeholder="搜尋品項代號或名稱..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- 檔案加載狀態 -->
+            <div id="loadingStatus" class="hidden text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+                <p class="text-slate-500 text-sm">正在套用內建補貨標準、解析 Excel/CSV 並計算補貨狀態...</p>
+            </div>
+
+            <!-- 主要表格呈現區 (預設隱藏) -->
+            <div id="tableContainer" class="hidden bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <th class="px-6 py-4">品類</th>
+                                <th class="px-6 py-4">品項代號</th>
+                                <th class="px-6 py-4">品項名稱</th>
+                                <th class="px-6 py-4">單位</th>
+                                <th class="px-6 py-4">倉庫</th>
+                                <th class="px-6 py-4 text-right">庫存數量</th>
+                                <th class="px-6 py-4 text-right">內建補貨標準</th>
+                                <th class="px-6 py-4 text-center">狀態說明 / 補貨後援</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- 動態插入 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 資訊欄 -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 text-xs text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <div>* 系統僅顯示 63-6（上下層/理貨倉）及 63-7 倉。補貨標準自動套用網頁內建值。</div>
+                    <div class="flex items-center space-x-1">
+                        <span class="w-3 h-3 bg-rose-100 border border-rose-300 rounded"></span>
+                        <span>紅色底：符合補貨標準 (下層不足，且上層/63-7倉有庫存可補)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 初始無資料畫面 -->
+            <div id="emptyState" class="bg-white rounded-2xl border-2 border-dashed border-slate-200 py-16 px-4 text-center">
+                <div class="max-w-md mx-auto flex flex-col items-center">
+                    <div class="p-4 bg-slate-50 rounded-full text-slate-400 mb-4">
+                        <i data-lucide="file-spreadsheet" class="w-12 h-12"></i>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-900 mb-1">尚未上傳任何資料</h3>
+                    <p class="text-xs text-slate-500 mb-6">請上傳您的庫存報表 Excel (.xlsx) 檔。系統會以您內建的標準進行交叉比對。</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 分頁二：補貨標準管理中心 -->
+        <section id="sectSettings" class="hidden space-y-6 animate-fadeIn">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- 新增/編輯補貨標準 Form -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-base font-bold text-slate-950 flex items-center">
+                            <i data-lucide="file-edit" class="w-5 h-5 mr-2 text-indigo-500"></i>
+                            <span id="formTitle">新增/修改補貨標準</span>
+                        </h3>
+                        <!-- 快速上鎖按鈕 -->
+                        <button id="btnLockSettings" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-2 py-1.5 rounded-lg flex items-center border border-slate-200 shadow-sm transition-all">
+                            <i data-lucide="lock" class="w-3.5 h-3.5 mr-1 text-slate-500"></i>鎖定並登出
+                        </button>
+                    </div>
+                    <form id="stdForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">品項代號 (必填)</label>
+                            <input type="text" id="formItemCode" required placeholder="例如：A01000103" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">品項名稱 (選填)</label>
+                            <input type="text" id="formItemName" placeholder="例如：日燦-特挑香菇" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">補貨標準數量 (必填)</label>
+                            <input type="number" id="formRefill" required min="0" step="any" placeholder="例如：10" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        </div>
+                        <div class="flex space-x-2 pt-2">
+                            <button type="submit" class="flex-grow bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition-colors shadow-sm">
+                                儲存設定
+                            </button>
+                            <button type="button" id="btnResetForm" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+                                清除
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 批次與管理卡片 -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- 批次匯入功能 -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-950 flex items-center mb-1">
+                                <i data-lucide="refresh-cw" class="w-4 h-4 text-emerald-500 mr-1.5"></i>
+                                一鍵匯入舊檔標準
+                            </h3>
+                            <p class="text-xs text-slate-500 leading-relaxed">
+                                上傳包含「補貨標準」欄位的舊 Excel/CSV 檔案，系統會自動抓取其中的<b>品項代號</b>及<b>補貨標準</b>並存入本機，以後就不需要再手動輸入了！
+                            </p>
+                        </div>
+                        <div class="flex flex-col justify-center items-center md:items-end">
+                            <input type="file" id="importStdFile" accept=".xlsx, .xls, .csv" class="hidden">
+                            <button id="btnImportStd" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors shadow-sm flex items-center space-x-2">
+                                <i data-lucide="import" class="w-4 h-4"></i>
+                                <span>上傳舊檔自動學習</span>
+                            </button>
+                            <p class="text-[10px] text-slate-400 mt-1.5">自動過濾並更新現有的品項標準</p>
+                        </div>
+                    </div>
+
+                    <!-- 內建標準列表 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3">
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900">目前已設定的補貨標準</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">共有 <span id="stdCountText" class="font-bold text-indigo-600">0</span> 個品項設定</p>
+                            </div>
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <input type="text" id="searchStdInput" placeholder="快速搜尋代號/品項..." class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none w-full sm:w-48">
+                                <button id="btnClearAllStds" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center shrink-0">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1"></i> 全部清空
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 列表表格 -->
+                        <div class="max-h-96 overflow-y-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead class="bg-slate-50 sticky top-0 border-b border-slate-100 font-semibold text-slate-500">
+                                    <tr>
+                                        <th class="px-6 py-3">品項代號</th>
+                                        <th class="px-6 py-3">品項名稱</th>
+                                        <th class="px-6 py-3 text-right">補貨標準數量</th>
+                                        <th class="px-6 py-3 text-center">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stdTableBody" class="divide-y divide-slate-100">
+                                    <!-- 動態生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- 密碼保護輸入彈窗 (Modal) -->
+    <div id="passwordModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-150 p-6 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300" id="passwordModalCard">
+            <div class="flex flex-col items-center text-center">
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-full mb-3">
+                    <i data-lucide="lock" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">分頁安全驗證</h3>
+                <p class="text-xs text-slate-500 mb-5">「補貨標準管理」為保護區域，請輸入管理密碼：</p>
+                
+                <form id="passwordForm" class="w-full space-y-4">
+                    <div>
+                        <input type="password" id="inputSettingsPassword" required placeholder="請輸入密碼" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-center font-mono tracking-widest text-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none">
+                        <p id="passwordErrorMsg" class="text-xs text-rose-500 font-medium mt-1.5 hidden">❌ 密碼錯誤，請重新輸入！</p>
+                    </div>
+                    <div class="flex space-x-2 pt-2">
+                        <button type="button" id="btnCancelPassword" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl text-sm transition-colors">
+                            取消
+                        </button>
+                        <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-sm">
+                            驗證登入
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示元件 -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-lg shadow-lg text-sm flex items-center space-x-2 translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50">
+        <i id="toastIcon" data-lucide="info" class="w-5 h-5"></i>
+        <span id="toastMessage">這是提示訊息</span>
+    </div>
+
+    <script>
+        // 初始化 Lucide 圖標
+        lucide.createIcons();
+
+        // 密碼安全設定
+        const SETTINGS_PASSWORD = "1021";
+        let isUnlocked = false; // 是否已解鎖補貨標準管理頁面
+        let pendingAction = null; // 暫存解鎖成功後要執行的函數
+
+        // 獲取密碼彈窗元素
+        const passwordModal = document.getElementById('passwordModal');
+        const passwordModalCard = document.getElementById('passwordModalCard');
+        const passwordForm = document.getElementById('passwordForm');
+        const inputSettingsPassword = document.getElementById('inputSettingsPassword');
+        const passwordErrorMsg = document.getElementById('passwordErrorMsg');
+        const btnCancelPassword = document.getElementById('btnCancelPassword');
+        const btnLockSettings = document.getElementById('btnLockSettings');
+
+        // 即時時鐘功能
+        function initClock() {
+            const clockEl = document.getElementById('liveClock');
+            
+            function updateClock() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const date = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const days = ['日', '一', '二', '三', '四', '五', '六'];
+                const dayOfWeek = days[now.getDay()];
+                
+                clockEl.textContent = `${year}/${month}/${date} (星期${dayOfWeek}) ${hours}:${minutes}:${seconds}`;
+            }
+            
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+        
+        // 啟動時鐘
+        initClock();
+
+        // 指定要篩選與統計的 3 個倉庫
+        const ALLOWED_WAREHOUSES = [
+            "63-6倉/下層/理貨倉",
+            "63-6倉/上層",
+            "63-7倉"
+        ];
+
+        // 預載基本品項資料做為初始範例 (方便使用者第一次打開就有基本資料)
+        const DEFAULT_STANDARDS = {
+            "A01000101": { name: "香菇［直腳］", refill: 100 },
+            "A01000103": { name: "日燦-特挑香菇［4.5-6.5cm］", refill: 10 },
+            "A01000105": { name: "王品-特挑香菇［4-6cm］", refill: 30 },
+            "A01000110": { name: "生展-特挑香菇［4-6cm］", refill: 50 },
+            "A01000115": { name: "香菇［條碼］", refill: 15 },
+            "A01000116": { name: "台茂-特挑香菇［4-6cm］", refill: 20 },
+            "T08000101": { name: "綠橡木生菜", refill: 10 },
+            "T09000101": { name: "紅火焰生菜", refill: 15 },
+            "T10000101": { name: "綠火焰生菜", refill: 20 },
+            "T11000101": { name: "紅蘿蔓", refill: 10 }
+        };
+
+        // 全域補貨標準對照表 (從 localStorage 讀取，若無則使用預設)
+        let replenishStandards = {};
+
+        function loadStandardsFromStorage() {
+            const stored = localStorage.getItem('replenish_standards_db');
+            if (stored) {
+                replenishStandards = JSON.parse(stored);
+            } else {
+                replenishStandards = { ...DEFAULT_STANDARDS };
+                saveStandardsToStorage();
+            }
+        }
+
+        function saveStandardsToStorage() {
+            localStorage.setItem('replenish_standards_db', JSON.stringify(replenishStandards));
+        }
+
+        // 初始化加載
+        loadStandardsFromStorage();
+
+        // DOM 元素
+        const tabInventory = document.getElementById('tabInventory');
+        const tabSettings = document.getElementById('tabSettings');
+        const sectInventory = document.getElementById('sectInventory');
+        const sectSettings = document.getElementById('sectSettings');
+
+        // 分頁切換邏輯
+        tabInventory.addEventListener('click', () => {
+            setActiveTab('inventory');
+        });
+
+        tabSettings.addEventListener('click', () => {
+            // 如果已解鎖，直接進入
+            if (isUnlocked) {
+                setActiveTab('settings');
+                renderSettingsList();
+            } else {
+                // 如果未解鎖，觸發密碼輸入彈窗
+                openPasswordModal(() => {
+                    setActiveTab('settings');
+                    renderSettingsList();
+                });
+            }
+        });
+
+        // 鎖定並登出功能
+        btnLockSettings.addEventListener('click', () => {
+            isUnlocked = false;
+            setActiveTab('inventory');
+            showToast('已安全鎖定補貨標準管理頁面！', 'lock', 'text-slate-400');
+        });
+
+        function setActiveTab(tab) {
+            if (tab === 'inventory') {
+                tabInventory.className = "px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-sm transition-all flex items-center";
+                tabSettings.className = "px-4 py-1.5 rounded-lg text-sm font-semibold text-indigo-100 hover:text-white hover:bg-indigo-600/50 transition-all flex items-center";
+                sectInventory.classList.remove('hidden');
+                sectSettings.classList.add('hidden');
+            } else {
+                tabSettings.className = "px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-sm transition-all flex items-center";
+                tabInventory.className = "px-4 py-1.5 rounded-lg text-sm font-semibold text-indigo-100 hover:text-white hover:bg-indigo-600/50 transition-all flex items-center";
+                sectInventory.classList.add('hidden');
+                sectSettings.classList.remove('hidden');
+            }
+        }
+
+        // 密碼彈窗操控函數
+        function openPasswordModal(onSuccess) {
+            pendingAction = onSuccess;
+            passwordErrorMsg.classList.add('hidden');
+            inputSettingsPassword.value = '';
+            
+            // 彈出效果
+            passwordModal.classList.remove('pointer-events-none');
+            passwordModal.classList.remove('opacity-0');
+            passwordModal.classList.add('opacity-100');
+            passwordModalCard.classList.remove('scale-95');
+            passwordModalCard.classList.add('scale-100');
+            
+            // 焦點放入密碼欄
+            setTimeout(() => inputSettingsPassword.focus(), 150);
+        }
+
+        function closePasswordModal() {
+            passwordModal.classList.remove('opacity-100');
+            passwordModal.classList.add('opacity-0');
+            passwordModal.classList.add('pointer-events-none');
+            passwordModalCard.classList.remove('scale-100');
+            passwordModalCard.classList.add('scale-95');
+            pendingAction = null;
+        }
+
+        // 取消按鈕事件
+        btnCancelPassword.addEventListener('click', () => {
+            closePasswordModal();
+            showToast('已取消密碼驗證。', 'shield-alert', 'text-amber-500');
+        });
+
+        // 密碼提交驗證事件
+        passwordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const inputVal = inputSettingsPassword.value;
+            
+            if (inputVal === SETTINGS_PASSWORD) {
+                isUnlocked = true;
+                passwordErrorMsg.classList.add('hidden');
+                closePasswordModal();
+                showToast('密碼驗證成功，已解鎖補貨標準管理中心。', 'shield-check', 'text-emerald-400');
+                
+                // 執行後續累積的跳轉操作
+                if (typeof pendingAction === 'function') {
+                    pendingAction();
+                }
+            } else {
+                passwordErrorMsg.classList.remove('hidden');
+                inputSettingsPassword.value = '';
+                inputSettingsPassword.focus();
+                // 震動一下卡片視覺效果
+                passwordModalCard.classList.add('animate-bounce');
+                setTimeout(() => passwordModalCard.classList.remove('animate-bounce'), 500);
+            }
+        });
+
+        // --- 補貨標準管理中心 JS 邏輯 ---
+        const stdForm = document.getElementById('stdForm');
+        const formItemCode = document.getElementById('formItemCode');
+        const formItemName = document.getElementById('formItemName');
+        const formRefill = document.getElementById('formRefill');
+        const btnResetForm = document.getElementById('btnResetForm');
+        const stdTableBody = document.getElementById('stdTableBody');
+        const stdCountText = document.getElementById('stdCountText');
+        const searchStdInput = document.getElementById('searchStdInput');
+        const btnClearAllStds = document.getElementById('btnClearAllStds');
+        const btnImportStd = document.getElementById('btnImportStd');
+        const importStdFile = document.getElementById('importStdFile');
+
+        // 表單提交：新增/修改標準
+        stdForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const code = formItemCode.value.trim();
+            const name = formItemName.value.trim();
+            const val = parseFloat(formRefill.value);
+
+            if (!code || isNaN(val)) return;
+
+            replenishStandards[code] = {
+                name: name || (replenishStandards[code] ? replenishStandards[code].name : '未命名品項'),
+                refill: val
+            };
+
+            saveStandardsToStorage();
+            renderSettingsList();
+            stdForm.reset();
+            showToast(`成功儲存品項 ${code} 的補貨標準為 ${val}`, 'check', 'text-emerald-400');
+            
+            // 如果此時已經有載入數據，重新分析
+            if (originalRows.length > 0) {
+                analyzeInventory();
+            }
+        });
+
+        btnResetForm.addEventListener('click', () => {
+            stdForm.reset();
+            document.getElementById('formTitle').textContent = "新增/修改補貨標準";
+            formItemCode.removeAttribute('readonly');
+        });
+
+        // 搜尋標準列表
+        searchStdInput.addEventListener('input', () => {
+            renderSettingsList();
+        });
+
+        // 批次匯入舊補貨標準觸發
+        btnImportStd.addEventListener('click', () => {
+            importStdFile.click();
+        });
+
+        importStdFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                importStandardsFromFile(e.target.files[0]);
+            }
+        });
+
+        // 匯入舊標準文件解析 (一鍵自動學習)
+        function importStandardsFromFile(file) {
+            const reader = new FileReader();
+            const isExcel = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
+
+            if (isExcel) {
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        processImportedRows(jsonData);
+                    } catch (error) {
+                        showToast(`學習失敗: ${error.message}`, 'alert-circle', 'text-rose-400');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.onload = function(e) {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split(/\r?\n/);
+                        const rows = lines.map(line => {
+                            let p = '', r = [];
+                            let q = false;
+                            for (let i = 0; i < line.length; i++) {
+                                let c = line.charAt(i);
+                                if (c === '"') q = !q;
+                                else if (c === ',' && !q) { r.push(p); p = ''; }
+                                else p += c;
+                            }
+                            r.push(p);
+                            return r.map(cell => cell.replace(/^"(.*)"$/, '$1').trim());
+                        });
+                        processImportedRows(rows);
+                    } catch (error) {
+                        showToast(`學習失敗: ${error.message}`, 'alert-circle', 'text-rose-400');
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+        }
+
+        // 處理匯入來的數據列，抽取出補貨標準
+        function processImportedRows(rows) {
+            if (rows.length < 2) {
+                showToast('無效檔案或空數據列', 'alert-circle', 'text-rose-400');
+                return;
+            }
+
+            const headers = rows[0].map(h => String(h || '').trim());
+            const colItemCode = headers.findIndex(h => h.includes('品項代號'));
+            const colItemName = headers.findIndex(h => h.includes('品項') && !h.includes('代號'));
+            const colRefill = headers.findIndex(h => h.includes('補貨標準'));
+
+            if (colItemCode === -1 || colRefill === -1) {
+                showToast('此舊檔案不包含「品項代號」或「補貨標準」欄位，無法自動學習！', 'alert-circle', 'text-rose-400');
+                return;
+            }
+
+            let importCount = 0;
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i];
+                if (!cells || cells.length === 0) continue;
+
+                const code = cells[colItemCode] ? String(cells[colItemCode]).trim() : '';
+                const name = colItemName !== -1 && cells[colItemName] ? String(cells[colItemName]).trim() : '';
+                const refillVal = cells[colRefill] !== undefined && cells[colRefill] !== '' ? parseFloat(cells[colRefill]) : null;
+
+                if (code && refillVal !== null && !isNaN(refillVal)) {
+                    replenishStandards[code] = {
+                        name: name || (replenishStandards[code] ? replenishStandards[code].name : '未命名品項'),
+                        refill: refillVal
+                    };
+                    importCount++;
+                }
+            }
+
+            if (importCount > 0) {
+                saveStandardsToStorage();
+                renderSettingsList();
+                showToast(`學習成功！已自動從舊檔案中匯入及更新 ${importCount} 個品項補貨標準。`, 'check', 'text-emerald-400');
+                importStdFile.value = '';
+                
+                // 重新計算現有報表
+                if (originalRows.length > 0) {
+                    analyzeInventory();
+                }
+            } else {
+                showToast('在該檔案中找不到有效的「補貨標準」數據。', 'alert-circle', 'text-rose-400');
+            }
+        }
+
+        // 渲染補貨標準列表
+        function renderSettingsList() {
+            stdTableBody.innerHTML = '';
+            const query = searchStdInput.value.trim().toLowerCase();
+            
+            let sortedKeys = Object.keys(replenishStandards).sort();
+            let displayCount = 0;
+
+            sortedKeys.forEach(code => {
+                const item = replenishStandards[code];
+                if (query && !code.toLowerCase().includes(query) && !item.name.toLowerCase().includes(query)) {
+                    return; // 搜尋過濾
+                }
+
+                displayCount++;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-6 py-3 font-mono font-semibold text-slate-800">${code}</td>
+                    <td class="px-6 py-3 text-slate-600">${item.name}</td>
+                    <td class="px-6 py-3 text-right font-mono font-bold text-indigo-600">${item.refill}</td>
+                    <td class="px-6 py-3 text-center space-x-1">
+                        <button onclick="editStd('${code}')" class="text-indigo-600 hover:text-indigo-900 font-medium px-2 py-1 rounded hover:bg-indigo-50">修改</button>
+                        <button onclick="deleteStd('${code}')" class="text-rose-600 hover:text-rose-900 font-medium px-2 py-1 rounded hover:bg-rose-50">刪除</button>
+                    </td>
+                `;
+                stdTableBody.appendChild(tr);
+            });
+
+            stdCountText.textContent = Object.keys(replenishStandards).length;
+
+            if (displayCount === 0) {
+                stdTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-slate-400">
+                            沒有找到符合的補貨標準，請新增或匯入。
+                        </td>
+                    </tr>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        // 修改/編輯標準
+        window.editStd = function(code) {
+            const item = replenishStandards[code];
+            if (item) {
+                formItemCode.value = code;
+                formItemCode.setAttribute('readonly', true); // 防止修改代號
+                formItemName.value = item.name;
+                formRefill.value = item.refill;
+                document.getElementById('formTitle').textContent = `正在修改: ${code}`;
+                formRefill.focus();
+                showToast(`已載入 ${code} 設定，請在左側修改後點選儲存`, 'info', 'text-sky-400');
+            }
+        };
+
+        // 刪除個別標準
+        window.deleteStd = function(code) {
+            if (confirm(`確定要刪除品項 [ ${code} ] 的補貨標準設定嗎？`)) {
+                delete replenishStandards[code];
+                saveStandardsToStorage();
+                renderSettingsList();
+                showToast(`已刪除品項 ${code} 的補貨標準`, 'trash', 'text-rose-400');
+                if (originalRows.length > 0) {
+                    analyzeInventory();
+                }
+            }
+        };
+
+        // 清空所有內建標準
+        btnClearAllStds.addEventListener('click', () => {
+            if (confirm('警告！這將會清除您目前在瀏覽器內建立的所有補貨標準。確定要全部清空嗎？')) {
+                replenishStandards = {};
+                saveStandardsToStorage();
+                renderSettingsList();
+                showToast('已清空所有補貨標準！', 'trash', 'text-rose-400');
+                if (originalRows.length > 0) {
+                    analyzeInventory();
+                }
+            }
+        });
+
+
+        // --- 庫存主系統 JS 邏輯 (整合內建標準) ---
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const emptyState = document.getElementById('emptyState');
+        const tableContainer = document.getElementById('tableContainer');
+        const tableBody = document.getElementById('tableBody');
+        const loadingStatus = document.getElementById('loadingStatus');
+        
+        const statsContainer = document.getElementById('statsContainer');
+        const filterContainer = document.getElementById('filterContainer');
+        const searchInput = document.getElementById('searchInput');
+        
+        const btnAll = document.getElementById('btnAll');
+        const btnReplenishOnly = document.getElementById('btnReplenishOnly');
+        const btnReplenishCount = document.getElementById('btnReplenishCount');
+        const btnNoStdOnly = document.getElementById('btnNoStdOnly');
+        const btnNoStdCount = document.getElementById('btnNoStdCount');
+
+        const statTotal = document.getElementById('statTotal');
+        const statItems = document.getElementById('statItems');
+        const statReplenish = document.getElementById('statReplenish');
+        const statNoStandard = document.getElementById('statNoStandard');
+
+        let originalRows = []; // 僅含 3 倉的所有列
+        let processedRows = []; // 結合內建補貨標準後的資料
+        let currentFilter = 'replenish'; 
+        let searchQuery = '';
+
+        // 拖曳及點擊上傳事件
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-indigo-400', 'bg-indigo-50/50');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-indigo-400', 'bg-indigo-50/50');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-indigo-400', 'bg-indigo-50/50');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const fileName = file.name.toLowerCase();
+            const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
+            const isCSV = fileName.endsWith('.csv');
+
+            if (!isExcel && !isCSV) {
+                showToast('格式不支援！請上傳 Excel (.xlsx, .xls) 或 CSV。', 'alert-circle', 'text-rose-400');
+                return;
+            }
+
+            showLoading(true);
+            const reader = new FileReader();
+
+            if (isExcel) {
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        parseExcelData(jsonData);
+                    } catch (error) {
+                        console.error(error);
+                        showLoading(false);
+                        emptyState.classList.remove('hidden');
+                        showToast(`Excel 載入錯誤: ${error.message}`, 'alert-circle', 'text-rose-400');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (isCSV) {
+                reader.onload = function(e) {
+                    let text = e.target.result;
+                    if (text.includes('')) {
+                        const big5Reader = new FileReader();
+                        big5Reader.onload = function(evt) {
+                            parseCSV(evt.target.result);
+                        };
+                        big5Reader.readAsText(file, 'Big5');
+                    } else {
+                        parseCSV(text);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+        }
+
+        function showLoading(isLoading) {
+            if (isLoading) {
+                loadingStatus.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+                tableContainer.classList.add('hidden');
+                statsContainer.classList.add('hidden');
+                filterContainer.classList.add('hidden');
+            } else {
+                loadingStatus.classList.add('hidden');
+            }
+        }
+
+        // 解析 Excel 二維資料
+        function parseExcelData(sheetRows) {
+            try {
+                const headers = sheetRows[0].map(h => String(h || '').trim());
+                
+                const headerMap = {
+                    category: headers.findIndex(h => h.includes('品類')),
+                    itemCode: headers.findIndex(h => h.includes('品項代號')),
+                    itemName: headers.findIndex(h => h.includes('品項') && !h.includes('代號')),
+                    unit: headers.findIndex(h => h.includes('單位')),
+                    warehouse: headers.findIndex(h => h.includes('倉庫')),
+                    stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量'))
+                };
+
+                const colIdx = {
+                    category: headerMap.category !== -1 ? headerMap.category : 0,
+                    itemCode: headerMap.itemCode !== -1 ? headerMap.itemCode : 1,
+                    itemName: headerMap.itemName !== -1 ? headerMap.itemName : 2,
+                    unit: headerMap.unit !== -1 ? headerMap.unit : 3,
+                    warehouse: headerMap.warehouse !== -1 ? headerMap.warehouse : 4,
+                    stock: headerMap.stock !== -1 ? headerMap.stock : 5
+                };
+
+                const parsedData = [];
+                for (let i = 1; i < sheetRows.length; i++) {
+                    const cells = sheetRows[i];
+                    if (!cells || cells.length === 0) continue;
+
+                    const itemCode = cells[colIdx.itemCode] ? String(cells[colIdx.itemCode]).trim() : '';
+                    const warehouse = cells[colIdx.warehouse] ? String(cells[colIdx.warehouse]).trim() : '';
+
+                    if (itemCode && warehouse) {
+                        if (ALLOWED_WAREHOUSES.includes(warehouse)) {
+                            parsedData.push({
+                                category: cells[colIdx.category] !== undefined ? String(cells[colIdx.category]).trim() : '',
+                                itemCode: itemCode,
+                                itemName: cells[colIdx.itemName] !== undefined ? String(cells[colIdx.itemName]).trim() : '',
+                                unit: cells[colIdx.unit] !== undefined ? String(cells[colIdx.unit]).trim() : '',
+                                warehouse: warehouse,
+                                stock: parseFloat(cells[colIdx.stock]) || 0
+                            });
+                        }
+                    }
+                }
+
+                if (parsedData.length === 0) {
+                    throw new Error('未在檔案中找到任何符合限定 3 個倉庫的數據。');
+                }
+
+                originalRows = parsedData;
+                analyzeInventory();
+
+            } catch (error) {
+                showLoading(false);
+                emptyState.classList.remove('hidden');
+                showToast(`Excel 解析失敗: ${error.message}`, 'alert-circle', 'text-rose-400');
+            }
+        }
+
+        // 解析 CSV 資料
+        function parseCSV(text) {
+            try {
+                const lines = text.split(/\r?\n/);
+                if (lines.length < 2) throw new Error('檔案格式不正確');
+
+                const headers = parseCSVLine(lines[0]);
+                const headerMap = {
+                    category: headers.findIndex(h => h.includes('品類')),
+                    itemCode: headers.findIndex(h => h.includes('品項代號')),
+                    itemName: headers.findIndex(h => h.includes('品項') && !h.includes('代號')),
+                    unit: headers.findIndex(h => h.includes('單位')),
+                    warehouse: headers.findIndex(h => h.includes('倉庫')),
+                    stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量'))
+                };
+
+                const colIdx = {
+                    category: headerMap.category !== -1 ? headerMap.category : 0,
+                    itemCode: headerMap.itemCode !== -1 ? headerMap.itemCode : 1,
+                    itemName: headerMap.itemName !== -1 ? headerMap.itemName : 2,
+                    unit: headerMap.unit !== -1 ? headerMap.unit : 3,
+                    warehouse: headerMap.warehouse !== -1 ? headerMap.warehouse : 4,
+                    stock: headerMap.stock !== -1 ? headerMap.stock : 5
+                };
+
+                const parsedData = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    const cells = parseCSVLine(line);
+                    if (cells[colIdx.itemCode] && cells[colIdx.warehouse]) {
+                        const warehouse = cells[colIdx.warehouse].trim();
+                        if (ALLOWED_WAREHOUSES.includes(warehouse)) {
+                            parsedData.push({
+                                category: cells[colIdx.category] || '',
+                                itemCode: cells[colIdx.itemCode].trim(),
+                                itemName: cells[colIdx.itemName] || '',
+                                unit: cells[colIdx.unit] || '',
+                                warehouse: warehouse,
+                                stock: parseFloat(cells[colIdx.stock]) || 0
+                            });
+                        }
+                    }
+                }
+
+                if (parsedData.length === 0) throw new Error('找不到指定三倉的庫存。');
+
+                originalRows = parsedData;
+                analyzeInventory();
+
+            } catch (error) {
+                showLoading(false);
+                emptyState.classList.remove('hidden');
+                showToast(`CSV 解析失敗: ${error.message}`, 'alert-circle', 'text-rose-400');
+            }
+        }
+
+        function parseCSVLine(text) {
+            let p = '', r = [];
+            let q = false;
+            for (let i = 0; i < text.length; i++) {
+                let c = text.charAt(i);
+                if (c === '"') q = !q;
+                else if (c === ',' && !q) { r.push(p); p = ''; }
+                else p += c;
+            }
+            r.push(p);
+            return r.map(cell => cell.replace(/^"(.*)"$/, '$1').trim());
+        }
+
+        // 核心計算：整合內建補貨標準
+        function analyzeInventory() {
+            // 建立 3 倉即時對照
+            const inventoryLookup = {};
+            originalRows.forEach(row => {
+                if (!inventoryLookup[row.itemCode]) {
+                    inventoryLookup[row.itemCode] = {};
+                }
+                inventoryLookup[row.itemCode][row.warehouse] = (inventoryLookup[row.itemCode][row.warehouse] || 0) + row.stock;
+            });
+
+            // 結合內建補貨標準進行補貨檢視
+            processedRows = originalRows.map(row => {
+                let needReplenish = false;
+                let isNoStandard = false;
+                let backupStockInfo = '';
+                
+                // 從網頁本機資料庫取得補貨標準
+                const stdItem = replenishStandards[row.itemCode];
+                const refillLimit = stdItem ? stdItem.refill : null;
+
+                // 如果上傳的 Excel 中沒有中文名稱，但本機庫存標準有，可以自動幫忙補正名稱
+                let displayName = row.itemName;
+                if (!displayName && stdItem && stdItem.name) {
+                    displayName = stdItem.name;
+                }
+
+                if (row.warehouse === "63-6倉/下層/理貨倉") {
+                    if (refillLimit !== null) {
+                        if (row.stock < refillLimit) {
+                            // 檢查 63-7 及 63-6上層 後援在庫狀態
+                            const code = row.itemCode;
+                            const stockIn7 = (inventoryLookup[code] && inventoryLookup[code]["63-7倉"]) || 0;
+                            const stockIn6Upper = (inventoryLookup[code] && inventoryLookup[code]["63-6倉/上層"]) || 0;
+
+                            if (stockIn7 > 0 || stockIn6Upper > 0) {
+                                needReplenish = true;
+                                const backups = [];
+                                if (stockIn7 > 0) {
+                                    // 將後援數字包覆在強大的高亮 Span 裡並放大
+                                    backups.push(`63-7倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-sm text-[13px]">${stockIn7}</span>`);
+                                }
+                                if (stockIn6Upper > 0) {
+                                    // 將後援數字包覆在強大的高亮 Span 裡並放大
+                                    backups.push(`上層倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-sm text-[13px]">${stockIn6Upper}</span>`);
+                                }
+                                backupStockInfo = backups.join(' / ');
+                            }
+                        }
+                    } else {
+                        isNoStandard = true; // 沒設定此品項補貨標準
+                    }
+                }
+
+                return {
+                    ...row,
+                    itemName: displayName || '未知品項名稱',
+                    refill: refillLimit,
+                    needReplenish,
+                    isNoStandard,
+                    backupStockInfo
+                };
+            });
+
+            updateStatsAndUI();
+            showLoading(false);
+            
+            tableContainer.classList.remove('hidden');
+            statsContainer.classList.remove('hidden');
+            filterContainer.classList.remove('hidden');
+            
+            showToast(`成功自動對應 ${originalRows.length} 筆指定三倉庫存資料`, 'check', 'text-emerald-400');
+        }
+
+        // 更新數據看板
+        function updateStatsAndUI() {
+            statTotal.textContent = processedRows.length;
+            
+            const uniqueItems = new Set(processedRows.map(r => r.itemCode));
+            statItems.textContent = uniqueItems.size;
+
+            const replenishCount = processedRows.filter(r => r.needReplenish).length;
+            statReplenish.textContent = replenishCount;
+            btnReplenishCount.textContent = replenishCount;
+
+            const noStdCount = processedRows.filter(r => r.isNoStandard).length;
+            statNoStandard.textContent = noStdCount;
+            btnNoStdCount.textContent = noStdCount;
+
+            renderTable();
+        }
+
+        // 渲染庫存表格
+        function renderTable() {
+            tableBody.innerHTML = '';
+            let displayRows = processedRows;
+
+            // 切換按鈕過濾
+            if (currentFilter === 'replenish') {
+                displayRows = displayRows.filter(r => r.needReplenish);
+            } else if (currentFilter === 'no_std') {
+                displayRows = displayRows.filter(r => r.isNoStandard);
+            }
+
+            // 搜尋條件過濾
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                displayRows = displayRows.filter(r => 
+                    r.itemCode.toLowerCase().includes(query) || 
+                    r.itemName.toLowerCase().includes(query) ||
+                    r.category.toLowerCase().includes(query)
+                );
+            }
+
+            if (displayRows.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                            <div class="flex flex-col items-center justify-center">
+                                <i data-lucide="search-code" class="w-8 h-8 mb-2 text-slate-300"></i>
+                                <span>找不到符合條件的數據紀錄</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            displayRows.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                if (row.needReplenish) {
+                    tr.className = "bg-rose-50/95 hover:bg-rose-100/95 transition-colors border-l-4 border-rose-500 font-medium";
+                } else if (row.isNoStandard) {
+                    tr.className = "bg-amber-50/40 hover:bg-amber-100/40 text-slate-700";
+                } else {
+                    tr.className = "hover:bg-slate-50/80 transition-colors text-slate-700";
+                }
+
+                // 補貨標準欄位顯示
+                let refillCell = '';
+                if (row.refill !== null) {
+                    refillCell = `<span class="font-mono font-bold text-slate-900 text-sm">${row.refill}</span>`;
+                } else if (row.warehouse === "63-6倉/下層/理貨倉") {
+                    refillCell = `
+                        <button onclick="quickSetStd('${row.itemCode}', '${row.itemName}')" class="text-xs text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 flex items-center inline-flex">
+                            <i data-lucide="plus" class="w-3 h-3 mr-0.5"></i> 設定標準
+                        </button>
+                    `;
+                } else {
+                    refillCell = `<span class="text-slate-300">-</span>`;
+                }
+
+                // 狀態 Badges 邏輯
+                let statusBadge = '';
+                if (row.needReplenish) {
+                    statusBadge = `
+                        <div class="inline-flex flex-col items-center space-y-1.5 py-1">
+                            <span class="inline-flex items-center px-2 py-1 rounded bg-rose-200 text-rose-800 text-xs font-bold border border-rose-300 animate-pulse">
+                                <i data-lucide="alert-circle" class="w-3.5 h-3.5 mr-1"></i>
+                                需即刻補貨
+                            </span>
+                            <span class="text-xs text-slate-600 mt-1 font-semibold flex items-center gap-1">
+                                後援: ${row.backupStockInfo}
+                            </span>
+                        </div>
+                    `;
+                } else if (row.warehouse === "63-6倉/下層/理貨倉") {
+                    if (row.isNoStandard) {
+                        statusBadge = `
+                            <span class="inline-flex items-center px-2 py-1 rounded bg-amber-100 text-amber-800 text-xs font-medium">
+                                未設補貨標準
+                            </span>
+                        `;
+                    } else if (row.stock < row.refill) {
+                        statusBadge = `
+                            <span class="inline-flex items-center px-2 py-1 rounded bg-slate-200 text-slate-800 text-xs font-medium">
+                                理貨倉不足但後援無貨
+                            </span>
+                        `;
+                    } else {
+                        statusBadge = `
+                            <span class="inline-flex items-center px-2 py-1 rounded bg-emerald-100 text-emerald-800 text-xs font-medium">
+                                庫存安全
+                            </span>
+                        `;
+                    }
+                } else {
+                    statusBadge = `
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-600 text-xs">
+                            後援庫存
+                        </span>
+                    `;
+                }
+
+                // 將 庫存數量 F 欄 的 text-right class 的字體大小放大（由 text-sm 提升為 text-[18px]，並維持等寬數字字型且加粗）
+                tr.innerHTML = `
+                    <td class="px-6 py-4 text-slate-400 text-xs">${row.category}</td>
+                    <td class="px-6 py-4 font-mono font-semibold">${row.itemCode}</td>
+                    <td class="px-6 py-4 text-slate-900">${row.itemName}</td>
+                    <td class="px-6 py-4 text-slate-400 text-xs">${row.unit}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-0.5 rounded text-xs ${
+                            row.warehouse === '63-6倉/下層/理貨倉' 
+                            ? 'bg-amber-50 text-amber-800 border border-amber-200' 
+                            : row.warehouse === '63-6倉/上層'
+                            ? 'bg-sky-50 text-sky-800 border border-sky-200'
+                            : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        }">
+                            ${row.warehouse}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right font-mono font-extrabold text-[18px] tracking-tight ${row.needReplenish ? 'text-rose-600' : 'text-slate-900'}">${row.stock}</td>
+                    <td class="px-6 py-4 text-right">${refillCell}</td>
+                    <td class="px-6 py-4 text-center">${statusBadge}</td>
+                `;
+
+                tableBody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+        }
+
+        // 快速前往設定標準 (加入密碼驗證判斷)
+        window.quickSetStd = function(code, name) {
+            const executeQuickSet = () => {
+                setActiveTab('settings');
+                formItemCode.value = code;
+                formItemName.value = name;
+                formRefill.value = '';
+                document.getElementById('formTitle').textContent = `設定品項標準: ${code}`;
+                formRefill.focus();
+            };
+
+            if (isUnlocked) {
+                executeQuickSet();
+            } else {
+                openPasswordModal(executeQuickSet);
+            }
+        };
+
+        // 篩選與過濾按鈕邏輯
+        btnAll.addEventListener('click', () => {
+            currentFilter = 'all';
+            btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-900 text-white transition-colors";
+            btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-rose-600 hover:bg-rose-50 transition-colors flex items-center";
+            btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center";
+            renderTable();
+        });
+
+        btnReplenishOnly.addEventListener('click', () => {
+            currentFilter = 'replenish';
+            btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors";
+            btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-rose-600 text-white transition-colors flex items-center";
+            btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center";
+            renderTable();
+        });
+
+        btnNoStdOnly.addEventListener('click', () => {
+            currentFilter = 'no_std';
+            btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors";
+            btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-rose-600 hover:bg-rose-50 transition-colors flex items-center";
+            btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-amber-600 text-white transition-colors flex items-center";
+            renderTable();
+        });
+
+        // 搜尋輸入過濾
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderTable();
+        });
+
+        // Toast 彈出視窗
+        function showToast(message, iconName, iconColorClass = 'text-white') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.textContent = message;
+            toastIcon.setAttribute('data-lucide', iconName);
+            toastIcon.className = `w-5 h-5 ${iconColorClass}`;
+            
+            lucide.createIcons();
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
