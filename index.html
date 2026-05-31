@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>理貨倉庫存與補貨檢視系統</title>
+    <title>倉庫庫存與補貨檢視系統</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -27,6 +27,7 @@
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">倉庫智慧補貨檢視系統</h1>
                     <div class="flex flex-wrap items-center gap-2 mt-1">
+                        <span class="text-xs text-indigo-200">專屬客製化模式 • 免維護 Excel 補貨標準欄</span>
                         <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定四倉比對模式 (63-6上下層 / 63-7 / 63-5低溫倉)</span>
                     </div>
                 </div>
@@ -457,11 +458,12 @@
         <span id="toastMessage">這是提示訊息</span>
     </div>
 
+    <!-- 💡 唯一聚合 JavaScript 控制區 -->
     <script>
         // ==========================================
-        // 1. 全域常數與智慧版本管理（升級至 v9.3 解決快取卡死 Bug）
+        // 1. 全域常數與智慧版本管理（升級至 v9.4 強制清空舊的重疊設定）
         // ==========================================
-        const CODE_VERSION = "2026.05.30_v9.4"; // 每次您修改預設標準，僅需增加此版本號，同仁電腦就會自動清空舊快取並重新同步！
+        const CODE_VERSION = "2026.05.30_v9.5"; 
         const SETTINGS_PASSWORD = "1021";
         
         const ALLOWED_WAREHOUSES = [
@@ -476,9 +478,7 @@
             return `${String(code || '').trim().toUpperCase()}_${String(unit || '').trim().toUpperCase()}`;
         }
 
-        // ==========================================
-        // 🎯 內建補貨標準資料庫 - 預載您提供的所有標準項目
-        // ==========================================
+        // 🎯 內建補貨標準資料庫 - 已新增「蒜片」並將預設 Key 大小寫對齊
         const DEFAULT_STANDARDS = {
             "A0201A101_KG": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg", "refill": 80 },
             "A0201A101_KG/大發": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg/大發", "refill": 80 },
@@ -511,7 +511,7 @@
             "A090A0101_KG": { "name": "秀珍菇A", "code": "A090A0101", "unit": "kg", "refill": 450 },
             "A100A0101_200G/盒": { "name": "霸王洋菇", "code": "A100A0101", "unit": "200g/盒", "refill": 100 },
             "A100B0101_200G/盒": { "name": "洋菇 ［盒裝］", "code": "A100B0101", "unit": "200g/盒", "refill": 100 },
-            "A100C0103_KG": { "name": "散裝洋菇", "code": "A100C0103", "unit": "kg", "refill": 20 },
+            "A100C0103_KG": { "name": "散裝洋菇", "code": "A100C0103", "unit": "kg", "refill": 10 },
             "A110A0101_KG": { "name": "黑蠔菇A", "code": "A110A0101", "unit": "kg", "refill": 240 },
             "A110A0303_盒": { "name": "有機黑蠔菇A［盒裝］", "code": "A110A0303", "unit": "盒", "refill": 864 },
             "A120A0101_KG": { "name": "白精靈菇A", "code": "A120A0101", "unit": "kg", "refill": 160 },
@@ -523,7 +523,7 @@
             "A290A0102_KG": { "name": "韓小菇A", "code": "A290A0102", "unit": "kg", "refill": 12 },
             "A290A0301_150G/盒": { "name": "有機韓小菇A", "code": "A290A0301", "unit": "150g/盒", "refill": 72 },
             "D05000101_KG": { "name": "洋蔥［去皮］", "code": "D05000101", "unit": "kg", "refill": 80 },
-            "D05000105_1公斤/包": { "name": "紫洋蔥［帶皮］", "code": "D05000105", "unit": "1公斤/包", "refill": 50 },
+            "D05000105_1公斤/包": { "name": "紫洋蔥［帶皮］", "code": "D05000105", "unit": "1公斤/包", "refill": 0 },
             "D05000106_2KG/包": { "name": "洋蔥［帶皮］", "code": "D05000106", "unit": "2kg/包", "refill": 20 },
             "G020A0101_KG": { "name": "水果彩椒［紅］", "code": "G020A0101", "unit": "kg", "refill": 3 },
             "G020A0102_KG": { "name": "水果彩椒［黃］", "code": "G020A0102", "unit": "kg", "refill": 3 },
@@ -541,8 +541,8 @@
             "R06000102_包": { "name": "日茂-烏殼綠筍茸", "code": "R06000102", "unit": "包", "refill": 20 },
             "R06000103_包": { "name": "日茂-連殼綠竹筍［2入］", "code": "R06000103", "unit": "包", "refill": 20 },
             "R06000106_包": { "name": "日茂-連殼綠竹筍［小-5入］", "code": "R06000106", "unit": "包", "refill": 20 },
-            "S02000101_KG": { "name": "雨來菇", "code": "S02000101", "unit": "kg", "refill": 30 },
-            "R07000107_600g/包": { "name": "蒜片", "code": "R07000107", "unit": "600g/包", "refill": 20 }
+            "S02000101_KG": { "name": "雨來菇", "code": "S02000101", "unit": "kg", "refill": 0 },
+            "R07000107_600G/包": { "name": "蒜片", "code": "R07000107", "unit": "600g/包", "refill": 20 } // 🌟 已新增蒜片並對齊大寫 Key
         };
 
         // 全域變數定義
@@ -594,32 +594,11 @@
             return isNaN(parsed) ? null : parsed;
         }
 
-        // 🛡️ 自動代碼版本管控、自訂品項保留與 LocalStorage 初始化合併
+        // 🛡️ 強制程式碼絕對優先：任何在 DEFAULT_STANDARDS 修改的數字，刷新網頁立刻生效覆蓋本機舊資料
         function loadStandardsFromStorage() {
             const currentStoredVersion = localStorage.getItem('replenish_standards_code_version');
             const stored = localStorage.getItem('replenish_standards_db_v8');
             let localData = {};
-
-            if (currentStoredVersion !== CODE_VERSION) {
-                console.log(`代碼標準升級中！自 ${currentStoredVersion} 升級至最新版 ${CODE_VERSION}`);
-                localStorage.setItem('replenish_standards_code_version', CODE_VERSION);
-                
-                let oldLocalData = {};
-                if (stored) {
-                    try { oldLocalData = JSON.parse(stored); } catch(e) { console.error(e); }
-                }
-
-                const customLocalData = {};
-                for (let key in oldLocalData) {
-                    if (!DEFAULT_STANDARDS[key] && oldLocalData[key]) {
-                        customLocalData[key] = oldLocalData[key];
-                    }
-                }
-
-                replenishStandards = { ...DEFAULT_STANDARDS, ...customLocalData };
-                saveStandardsToStorage();
-                return;
-            }
 
             if (stored) {
                 try {
@@ -644,7 +623,25 @@
                 }
             }
 
-            replenishStandards = { ...DEFAULT_STANDARDS, ...cleanedLocalData };
+            // 🌟 如果偵測到版本號有變更，我們強制清除殘留的快取並以 DEFAULT_STANDARDS 為主！
+            if (currentStoredVersion !== CODE_VERSION) {
+                console.log(`代碼標準升級中！自 ${currentStoredVersion} 升級至最新版 ${CODE_VERSION}`);
+                localStorage.setItem('replenish_standards_code_version', CODE_VERSION);
+                
+                // 保留不在 DEFAULT_STANDARDS 裡面，但由使用者自己手動新增的其他品項
+                const customLocalData = {};
+                for (let key in cleanedLocalData) {
+                    if (!DEFAULT_STANDARDS[key]) {
+                        customLocalData[key] = cleanedLocalData[key];
+                    }
+                }
+                
+                replenishStandards = { ...DEFAULT_STANDARDS, ...customLocalData };
+            } else {
+                // 否則一般情況下，也保證 DEFAULT_STANDARDS 的數字能蓋過 localData 的舊設定
+                replenishStandards = { ...cleanedLocalData, ...DEFAULT_STANDARDS };
+            }
+            
             saveStandardsToStorage();
         }
 
