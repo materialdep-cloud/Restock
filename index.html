@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>即時庫存與補貨檢視系統</title>
+    <title>倉庫庫存與補貨檢視系統</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -27,6 +27,7 @@
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">倉庫智慧補貨檢視系統</h1>
                     <div class="flex flex-wrap items-center gap-2 mt-1">
+                        <span class="text-xs text-indigo-200">專屬客製化模式 • 免維護 Excel 補貨標準欄</span>
                         <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定四倉比對模式 (63-6上下層 / 63-7 / 63-5低溫倉)</span>
                     </div>
                 </div>
@@ -73,21 +74,17 @@
                         <ul class="space-y-2.5 text-sm text-slate-600">
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
-                                <span><b>自動對應：</b>系統會同時比對<b>品項代號</b>與<b>庫存單位</b>，精準套用補貨標準。</span>
+                                <span><b>自動對應：</b>系統會同時比對<b>品項代號</b>與<b>庫存單位</b>。</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
-                                <span><b>補貨判定：</b>當<b>「63-6倉/下層/理貨倉」</b>庫存量低於補貨標準時。</span>
+                                <span><b>內場補貨判定：</b>理貨倉不足，但後援倉(上層/63-7/低溫)有貨，會亮紅底提示內場補貨。</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
-                                <span><b>後援檢查：</b>確認<b>「63-7倉」</b>、<b>「63-6倉/上層」</b>或<b>「63-5倉/低溫倉」</b>是否有大於 0 的庫存可以支援。</span>
+                                <span><b>緊急採購判定：</b>若理貨倉不足，且所有後援倉都沒貨，則會亮紫底提示需通知採購！</span>
                             </li>
                         </ul>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-slate-100 text-xs text-rose-500 font-medium flex items-center">
-                        <i data-lucide="alert-triangle" class="w-4 h-4 mr-1"></i>
-                        滿足以上條件，該列將自動底色反紅提醒補貨。
                     </div>
                 </div>
 
@@ -142,41 +139,50 @@
             </div>
 
             <!-- 數據統計區 (預設隱藏) -->
-            <div id="statsContainer" class="hidden grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
-                    <div class="p-3 bg-blue-50 text-blue-500 rounded-lg">
-                        <i data-lucide="database" class="w-6 h-6"></i>
+            <div id="statsContainer" class="hidden grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-3">
+                    <div class="p-2 bg-blue-50 text-blue-500 rounded-lg">
+                        <i data-lucide="database" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-400 font-medium">指定四倉總筆數</div>
-                        <div id="statTotal" class="text-2xl font-bold text-slate-800">-</div>
+                        <div class="text-[11px] text-slate-400 font-medium">總筆數</div>
+                        <div id="statTotal" class="text-xl font-bold text-slate-800">-</div>
                     </div>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
-                    <div class="p-3 bg-purple-50 text-purple-500 rounded-lg">
-                        <i data-lucide="tag" class="w-6 h-6"></i>
+                <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-3">
+                    <div class="p-2 bg-slate-50 text-slate-500 rounded-lg">
+                        <i data-lucide="tag" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-400 font-medium">不重複品項數 (代號+單位)</div>
-                        <div id="statItems" class="text-2xl font-bold text-slate-800">-</div>
+                        <div class="text-[11px] text-slate-400 font-medium">總品項數</div>
+                        <div id="statItems" class="text-xl font-bold text-slate-800">-</div>
                     </div>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
-                    <div class="p-3 bg-rose-50 text-rose-500 rounded-lg">
-                        <i data-lucide="bell" class="w-6 h-6"></i>
+                <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-3">
+                    <div class="p-2 bg-rose-50 text-rose-500 rounded-lg">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-400 font-medium">需要補貨品項數</div>
-                        <div id="statReplenish" class="text-2xl font-bold text-rose-600">-</div>
+                        <div class="text-[11px] text-slate-400 font-medium">內場需補貨</div>
+                        <div id="statReplenish" class="text-xl font-bold text-rose-600">-</div>
                     </div>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-4">
-                    <div class="p-3 bg-amber-50 text-amber-500 rounded-lg">
-                        <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                <div class="bg-white p-3.5 rounded-xl shadow-sm border border-purple-200 flex items-center space-x-3 ring-1 ring-purple-500/20 shadow-purple-500/10">
+                    <div class="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-400 font-medium">未設定補貨標準品項</div>
-                        <div id="statNoStandard" class="text-2xl font-bold text-amber-600">-</div>
+                        <div class="text-[11px] text-purple-600 font-bold">缺貨需等進貨</div>
+                        <div id="statPurchase" class="text-xl font-black text-purple-700">-</div>
+                    </div>
+                </div>
+                <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-3">
+                    <div class="p-2 bg-amber-50 text-amber-500 rounded-lg">
+                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">未設定標準</div>
+                        <div id="statNoStandard" class="text-xl font-bold text-amber-600">-</div>
                     </div>
                 </div>
             </div>
@@ -185,15 +191,19 @@
             <div id="filterContainer" class="hidden bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex flex-wrap gap-2 items-center">
                     <button id="btnAll" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
-                        限定四倉全部資料
+                        全四倉資料
                     </button>
-                    <button id="btnReplenishOnly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-rose-600 text-white transition-colors flex items-center">
+                    <button id="btnReplenishOnly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-rose-600 hover:bg-rose-50 transition-colors flex items-center">
                         <span class="w-2 h-2 rounded-full bg-white mr-2"></span>
-                        僅看需補貨項目 (<span id="btnReplenishCount">0</span>)
+                        內場需補貨 (<span id="btnReplenishCount">0</span>)
+                    </button>
+                    <button id="btnPurchaseOnly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-purple-700 hover:bg-purple-100 transition-colors flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
+                        缺貨需等進貨 (<span id="btnPurchaseCount">0</span>)
                     </button>
                     <button id="btnNoStdOnly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center">
                         <span class="w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
-                        未設定補貨標準的品項 (<span id="btnNoStdCount">0</span>)
+                        未設定標準 (<span id="btnNoStdCount">0</span>)
                     </button>
                 </div>
                 <div class="relative w-full md:w-72">
@@ -259,9 +269,15 @@
                 <!-- 資訊欄 -->
                 <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 text-xs text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-2">
                     <div id="dataSourceTag">* 數據載入來源: 尚未加載</div>
-                    <div class="flex items-center space-x-1">
-                        <span class="w-3 h-3 bg-rose-100 border border-rose-300 rounded"></span>
-                        <span>紅色底：符合補貨標準 (下層不足，且上層/63-7倉/63-5低溫倉有庫存可補)</span>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-1">
+                            <span class="w-3 h-3 bg-rose-100 border border-rose-300 rounded"></span>
+                            <span>紅色：內場需補貨 (上層/63-7/低溫 有貨)</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <span class="w-3 h-3 bg-purple-100 border border-purple-300 rounded"></span>
+                            <span class="font-bold text-purple-600">紫色：缺貨需等進貨 (全倉皆空)</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -460,9 +476,9 @@
     <!-- 💡 唯一聚合 JavaScript 控制區 -->
     <script>
         // ==========================================
-        // 1. 全域常數與智慧版本管理（升級至 v9.5 強制清空舊的重疊設定）
+        // 1. 全域常數與智慧版本管理
         // ==========================================
-        const CODE_VERSION = "2026.05.30_v9.8"; 
+        const CODE_VERSION = "2026.05.30_v9.7"; 
         const SETTINGS_PASSWORD = "1021";
         
         const ALLOWED_WAREHOUSES = [
@@ -472,12 +488,11 @@
             "63-5倉/低溫倉"
         ];
 
-        // 輔助函式：建立代號 + 單位的唯一 Key (不分大小寫與多餘空格)
         function makeKey(code, unit) {
             return `${String(code || '').trim().toUpperCase()}_${String(unit || '').trim().toUpperCase()}`;
         }
 
-        // 🎯 內建補貨標準資料庫 - 已新增「蒜片」並將預設 Key 大小寫對齊
+        // 🎯 內建補貨標準資料庫
         const DEFAULT_STANDARDS = {
             "A0201A101_KG": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg", "refill": 80 },
             "A0201A101_KG/大發": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg/大發", "refill": 48 },
@@ -557,7 +572,6 @@
         // 2. 核心底層與資料處理函數
         // ==========================================
         
-        // 即時時鐘功能
         function initClock() {
             function updateClock() {
                 const clockEl = document.getElementById('liveClock');
@@ -584,7 +598,6 @@
             setInterval(updateClock, 1000);
         }
 
-        // 輔助清洗千分位與雙引號包裹之數字
         function cleanFloat(val) {
             if (val === undefined || val === null || val === '') return null;
             if (typeof val === 'number') return val;
@@ -593,9 +606,8 @@
             return isNaN(parsed) ? null : parsed;
         }
 
-        // 🛡️ 強制程式碼絕對優先：任何在 DEFAULT_STANDARDS 修改的數字，刷新網頁立刻生效覆蓋本機舊資料
+        // 🛡️ 程式碼絕對優先機制
         function loadStandardsFromStorage() {
-            const currentStoredVersion = localStorage.getItem('replenish_standards_code_version');
             const stored = localStorage.getItem('replenish_standards_db_v8');
             let localData = {};
 
@@ -622,25 +634,8 @@
                 }
             }
 
-            // 🌟 如果偵測到版本號有變更，我們強制清除殘留的快取並以 DEFAULT_STANDARDS 為主！
-            if (currentStoredVersion !== CODE_VERSION) {
-                console.log(`代碼標準升級中！自 ${currentStoredVersion} 升級至最新版 ${CODE_VERSION}`);
-                localStorage.setItem('replenish_standards_code_version', CODE_VERSION);
-                
-                // 保留不在 DEFAULT_STANDARDS 裡面，但由使用者自己手動新增的其他品項
-                const customLocalData = {};
-                for (let key in cleanedLocalData) {
-                    if (!DEFAULT_STANDARDS[key]) {
-                        customLocalData[key] = cleanedLocalData[key];
-                    }
-                }
-                
-                replenishStandards = { ...DEFAULT_STANDARDS, ...customLocalData };
-            } else {
-                // 否則一般情況下，也保證 DEFAULT_STANDARDS 的數字能蓋過 localData 的舊設定
-                replenishStandards = { ...cleanedLocalData, ...DEFAULT_STANDARDS };
-            }
-            
+            // DEFAULT_STANDARDS 放在後面，讓它無條件覆蓋同仁電腦上快取的舊資料！
+            replenishStandards = { ...cleanedLocalData, ...DEFAULT_STANDARDS };
             saveStandardsToStorage();
         }
 
@@ -648,7 +643,6 @@
             localStorage.setItem('replenish_standards_db_v8', JSON.stringify(replenishStandards));
         }
 
-        // 渲染補貨標準列表
         function renderSettingsList() {
             const stdTableBody = document.getElementById('stdTableBody');
             const stdCountText = document.getElementById('stdCountText');
@@ -701,7 +695,6 @@
             if (window.lucide) window.lucide.createIcons();
         }
 
-        // 全自動預載備份 JSON
         function autoLoadBackupJson() {
             fetch('倉庫補貨標準備份_20260529.json?t=' + new Date().getTime(), { cache: 'no-store' })
                 .then(response => {
@@ -736,7 +729,6 @@
                 });
         }
 
-        // 自動讀取預載雲端 CSV (強效防快取載入)
         function autoFetchCloudOnLoad(url) {
             if (!url) {
                 autoDetectLocalFile();
@@ -766,7 +758,6 @@
                 });
         }
 
-        // 自動讀取本機 CSV
         function autoDetectLocalFile() {
             fetch('補貨標準.csv?t=' + new Date().getTime(), { cache: 'no-store' })
                 .then(response => {
@@ -822,7 +813,6 @@
             return r.map(cell => cell.replace(/^"(.*)"$/, '$1').trim());
         }
 
-        // 解析 Excel 檔案
         function parseExcelData(sheetRows) {
             try {
                 const headers = sheetRows[0].map(h => String(h || '').trim());
@@ -904,7 +894,6 @@
             }
         }
 
-        // 解析 CSV 檔案
         function parseCSV(text) {
             try {
                 const lines = text.split(/\r?\n/);
@@ -987,7 +976,7 @@
             }
         }
 
-        // 核心計算：整合內建補貨標準 (採用 代號+單位 精準比對)
+        // 核心計算：整合內建補貨標準 (加上 needPurchase 邏輯)
         function analyzeInventory() {
             const inventoryLookup = {};
             originalRows.forEach(row => {
@@ -1000,6 +989,7 @@
 
             processedRows = originalRows.map(row => {
                 let needReplenish = false;
+                let needPurchase = false;
                 let isNoStandard = false;
                 let backupStockInfo = '';
                 
@@ -1032,6 +1022,8 @@
                                     backups.push(`63-5低溫倉: <span class="text-fuchsia-800 bg-fuchsia-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockInLowTemp}</span>`);
                                 }
                                 backupStockInfo = backups.join(' / ');
+                            } else {
+                                needPurchase = true; 
                             }
                         }
                     } else {
@@ -1044,6 +1036,7 @@
                     itemName: displayName || '未知品項名稱',
                     refill: refillLimit,
                     needReplenish,
+                    needPurchase,
                     isNoStandard,
                     backupStockInfo
                 };
@@ -1054,22 +1047,34 @@
             
             const statsContainer = document.getElementById('statsContainer');
             const filterContainer = document.getElementById('filterContainer');
-            const tableContainer = document.getElementById('tableContainer');
-            const allSafeCelebration = document.getElementById('allSafeCelebration');
-
             if (statsContainer) statsContainer.classList.remove('hidden');
             if (filterContainer) filterContainer.classList.remove('hidden');
             
+            updateFilterButtons(currentFilter);
+            checkCelebration();
+            showToast(`成功自動對應 ${originalRows.length} 筆指定四倉庫存資料`, 'check', 'text-emerald-400');
+        }
+
+        function checkCelebration() {
             const replenishCount = processedRows.filter(r => r.needReplenish).length;
-            if (replenishCount === 0) {
+            const purchaseCount = processedRows.filter(r => r.needPurchase).length;
+            
+            const allSafeCelebration = document.getElementById('allSafeCelebration');
+            const tableContainer = document.getElementById('tableContainer');
+            
+            if (currentFilter === 'all' || currentFilter === 'no_std') {
+                if (allSafeCelebration) allSafeCelebration.classList.add('hidden');
+                if (tableContainer) tableContainer.classList.remove('hidden');
+            } else if (currentFilter === 'replenish' && replenishCount === 0) {
+                if (tableContainer) tableContainer.classList.add('hidden');
+                if (allSafeCelebration) allSafeCelebration.classList.remove('hidden');
+            } else if (currentFilter === 'purchase' && purchaseCount === 0) {
                 if (tableContainer) tableContainer.classList.add('hidden');
                 if (allSafeCelebration) allSafeCelebration.classList.remove('hidden');
             } else {
                 if (allSafeCelebration) allSafeCelebration.classList.add('hidden');
                 if (tableContainer) tableContainer.classList.remove('hidden');
             }
-            
-            showToast(`成功自動對應 ${originalRows.length} 筆指定四倉庫存資料`, 'check', 'text-emerald-400');
         }
 
         function editStd(compositeKey) {
@@ -1148,12 +1153,10 @@
         }
 
         function switchFilterToAll() {
-            const allSafeCelebration = document.getElementById('allSafeCelebration');
-            const tableContainer = document.getElementById('tableContainer');
-            const btnAll = document.getElementById('btnAll');
-            if (allSafeCelebration) allSafeCelebration.classList.add('hidden');
-            if (tableContainer) tableContainer.classList.remove('hidden');
-            if (btnAll) btnAll.click();
+            currentFilter = 'all';
+            updateFilterButtons('all');
+            checkCelebration();
+            renderTable();
         }
 
         function openPasswordModal(onSuccess) {
@@ -1197,6 +1200,34 @@
             pendingAction = null;
         }
 
+        function updateFilterButtons(filter) {
+            const btnAll = document.getElementById('btnAll');
+            const btnReplenishOnly = document.getElementById('btnReplenishOnly');
+            const btnPurchaseOnly = document.getElementById('btnPurchaseOnly');
+            const btnNoStdOnly = document.getElementById('btnNoStdOnly');
+
+            if (btnAll) {
+                btnAll.className = filter === 'all' 
+                    ? "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-900 text-white transition-colors" 
+                    : "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors";
+            }
+            if (btnReplenishOnly) {
+                btnReplenishOnly.className = filter === 'replenish'
+                    ? "px-4 py-2 rounded-lg text-sm font-semibold bg-rose-600 text-white transition-colors flex items-center shadow-md"
+                    : "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-rose-600 hover:bg-rose-50 transition-colors flex items-center";
+            }
+            if (btnPurchaseOnly) {
+                btnPurchaseOnly.className = filter === 'purchase'
+                    ? "px-4 py-2 rounded-lg text-sm font-semibold bg-purple-600 text-white transition-colors flex items-center shadow-md"
+                    : "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-purple-700 hover:bg-purple-100 transition-colors flex items-center";
+            }
+            if (btnNoStdOnly) {
+                btnNoStdOnly.className = filter === 'no_std'
+                    ? "px-4 py-2 rounded-lg text-sm font-semibold bg-amber-600 text-white transition-colors flex items-center shadow-md"
+                    : "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center";
+            }
+        }
+
         function renderTable() {
             const tableBody = document.getElementById('tableBody');
             if (!tableBody) return;
@@ -1205,6 +1236,8 @@
 
             if (currentFilter === 'replenish') {
                 displayRows = displayRows.filter(r => r.needReplenish);
+            } else if (currentFilter === 'purchase') {
+                displayRows = displayRows.filter(r => r.needPurchase);
             } else if (currentFilter === 'no_std') {
                 displayRows = displayRows.filter(r => r.isNoStandard);
             }
@@ -1240,6 +1273,8 @@
                 
                 if (row.needReplenish) {
                     tr.className = "bg-rose-50/95 hover:bg-rose-100/95 transition-colors border-l-4 border-rose-500 font-medium";
+                } else if (row.needPurchase) {
+                    tr.className = "bg-purple-50/95 hover:bg-purple-100/95 transition-colors border-l-4 border-purple-500 font-medium";
                 } else if (row.isNoStandard) {
                     tr.className = "bg-amber-50/40 hover:bg-amber-100/40 text-slate-700";
                 } else {
@@ -1266,10 +1301,22 @@
                         <div class="inline-flex flex-col items-center space-y-1.5 py-1">
                             <span class="inline-flex items-center px-2 py-1 rounded bg-rose-200 text-rose-800 text-xs font-bold border border-rose-300 animate-pulse">
                                 <i data-lucide="alert-circle" class="w-3.5 h-3.5 mr-1"></i>
-                                需即刻補貨
+                                內場需補貨
                             </span>
                             <span class="text-xs text-slate-600 mt-1 font-semibold flex items-center gap-1">
                                 後援: ${row.backupStockInfo}
+                            </span>
+                        </div>
+                    `;
+                } else if (row.needPurchase) {
+                    statusBadge = `
+                        <div class="inline-flex flex-col items-center space-y-1.5 py-1">
+                            <span class="inline-flex items-center px-2 py-1 rounded bg-purple-200 text-purple-800 text-xs font-bold border border-purple-300 animate-pulse shadow-sm shadow-purple-500/20">
+                                <i data-lucide="shopping-cart" class="w-3.5 h-3.5 mr-1"></i>
+                                缺貨需等進貨
+                            </span>
+                            <span class="text-[10px] text-purple-600 mt-1 font-semibold flex items-center gap-1">
+                                其他倉別已無庫存
                             </span>
                         </div>
                     `;
@@ -1319,7 +1366,7 @@
                             ${row.warehouse}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-right font-mono font-extrabold text-[18px] tracking-tight ${row.needReplenish ? 'text-rose-600' : 'text-slate-900'}">${row.stock}</td>
+                    <td class="px-6 py-4 text-right font-mono font-extrabold text-[18px] tracking-tight ${row.needReplenish ? 'text-rose-600' : row.needPurchase ? 'text-purple-600' : 'text-slate-900'}">${row.stock}</td>
                     <td class="px-6 py-4 text-right">${refillCell}</td>
                     <td class="px-6 py-4 text-center">${statusBadge}</td>
                 `;
@@ -1334,8 +1381,10 @@
             const statTotal = document.getElementById('statTotal');
             const statItems = document.getElementById('statItems');
             const statReplenish = document.getElementById('statReplenish');
+            const statPurchase = document.getElementById('statPurchase');
             const statNoStandard = document.getElementById('statNoStandard');
             const btnReplenishCount = document.getElementById('btnReplenishCount');
+            const btnPurchaseCount = document.getElementById('btnPurchaseCount');
             const btnNoStdCount = document.getElementById('btnNoStdCount');
 
             if (statTotal) statTotal.textContent = processedRows.length;
@@ -1346,6 +1395,10 @@
             const replenishCount = processedRows.filter(r => r.needReplenish).length;
             if (statReplenish) statReplenish.textContent = replenishCount;
             if (btnReplenishCount) btnReplenishCount.textContent = replenishCount;
+
+            const purchaseCount = processedRows.filter(r => r.needPurchase).length;
+            if (statPurchase) statPurchase.textContent = purchaseCount;
+            if (btnPurchaseCount) btnPurchaseCount.textContent = purchaseCount;
 
             const noStdCount = processedRows.filter(r => r.isNoStandard).length;
             if (statNoStandard) statNoStandard.textContent = noStdCount;
@@ -1447,6 +1500,7 @@
         const fileInput = document.getElementById('fileInput');
         const btnAll = document.getElementById('btnAll');
         const btnReplenishOnly = document.getElementById('btnReplenishOnly');
+        const btnPurchaseOnly = document.getElementById('btnPurchaseOnly');
         const btnNoStdOnly = document.getElementById('btnNoStdOnly');
         const searchInput = document.getElementById('searchInput');
 
@@ -1703,11 +1757,8 @@
         if (btnAll) {
             btnAll.addEventListener('click', () => {
                 currentFilter = 'all';
-                btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-900 text-white transition-colors";
-                if (btnReplenishOnly) btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-rose-600 hover:bg-rose-50 transition-colors flex items-center";
-                if (btnNoStdOnly) btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center";
-                if (allSafeCelebration) allSafeCelebration.classList.add('hidden');
-                if (tableContainer) tableContainer.classList.remove('hidden');
+                updateFilterButtons('all');
+                checkCelebration();
                 renderTable();
             });
         }
@@ -1715,18 +1766,17 @@
         if (btnReplenishOnly) {
             btnReplenishOnly.addEventListener('click', () => {
                 currentFilter = 'replenish';
-                if (btnAll) btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors";
-                btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-rose-600 text-white transition-colors flex items-center";
-                if (btnNoStdOnly) btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center";
-                
-                const replenishCount = processedRows.filter(r => r.needReplenish).length;
-                if (replenishCount === 0) {
-                    if (tableContainer) tableContainer.classList.add('hidden');
-                    if (allSafeCelebration) allSafeCelebration.classList.remove('hidden');
-                } else {
-                    if (allSafeCelebration) allSafeCelebration.classList.add('hidden');
-                    if (tableContainer) tableContainer.classList.remove('hidden');
-                }
+                updateFilterButtons('replenish');
+                checkCelebration();
+                renderTable();
+            });
+        }
+
+        if (btnPurchaseOnly) {
+            btnPurchaseOnly.addEventListener('click', () => {
+                currentFilter = 'purchase';
+                updateFilterButtons('purchase');
+                checkCelebration();
                 renderTable();
             });
         }
@@ -1734,11 +1784,8 @@
         if (btnNoStdOnly) {
             btnNoStdOnly.addEventListener('click', () => {
                 currentFilter = 'no_std';
-                if (btnAll) btnAll.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors";
-                if (btnReplenishOnly) btnReplenishOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-rose-600 hover:bg-rose-50 transition-colors flex items-center";
-                btnNoStdOnly.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-amber-600 text-white transition-colors flex items-center";
-                if (allSafeCelebration) allSafeCelebration.classList.add('hidden');
-                if (tableContainer) tableContainer.classList.remove('hidden');
+                updateFilterButtons('no_std');
+                checkCelebration();
                 renderTable();
             });
         }
