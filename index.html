@@ -27,6 +27,7 @@
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">理貨倉庫存與補貨檢視系統</h1>
                     <div class="flex flex-wrap items-center gap-2 mt-1">
+                        <span class="text-xs text-indigo-200">專屬客製化模式 • 免維護 Excel 補貨標準欄</span>
                         <span class="text-[10px] bg-indigo-700 text-indigo-100 px-2 py-0.5 rounded-full">特定四倉比對模式 (63-6上下層 / 63-7 / 63-5低溫倉)</span>
                     </div>
                 </div>
@@ -73,15 +74,15 @@
                         <ul class="space-y-2.5 text-sm text-slate-600">
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
-                                <span><b>自動對應：</b>系統會同時比對<b>品項代號</b>與<b>庫存單位</b>。</span>
+                                <span><b>理貨倉主動監控：</b>系統會以 <b>63-6倉/下層/理貨倉</b> 的庫存量與補貨標準比對。</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
-                                <span><b>內場補貨判定：</b>理貨倉不足，但後援倉(上層/63-7/低溫)有貨，會亮紅底提示內場補貨。</span>
+                                <span><b>內場補貨判定：</b>當理貨倉不足，但後援倉（63-7/上層/低溫）有貨，會亮<b>紅底</b>提示內場補貨。</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="text-indigo-500 mr-1.5">•</span>
-                                <span><b>緊急採購判定：</b>若理貨倉不足，且所有後援倉都沒貨，則會亮紫底提示需通知採購或是等進貨！</span>
+                                <span><b>緊急採購判定：</b>若理貨倉不足，且所有後援倉都完全沒貨，則會亮<b>紫底</b>提示需通知採購！</span>
                             </li>
                         </ul>
                     </div>
@@ -107,7 +108,7 @@
                         </div>
                     </div>
 
-                    <!-- 雲端一鍵同步 (對接 Google Sheet / ERP) -->
+                    <!-- 雲端一鍵同步 -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
                         <div class="mb-2">
                             <h4 class="text-xs font-bold text-indigo-600 flex items-center">
@@ -137,7 +138,7 @@
 
             </div>
 
-            <!-- 數據統計區 (預設隱藏) -->
+            <!-- 數據統計區 (加入缺貨需採購) -->
             <div id="statsContainer" class="hidden grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-100 flex items-center space-x-3">
                     <div class="p-2 bg-blue-50 text-blue-500 rounded-lg">
@@ -171,7 +172,7 @@
                         <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <div class="text-[11px] text-purple-600 font-bold">缺貨需等進貨</div>
+                        <div class="text-[11px] text-purple-600 font-bold">缺貨需採購</div>
                         <div id="statPurchase" class="text-xl font-black text-purple-700">-</div>
                     </div>
                 </div>
@@ -186,7 +187,7 @@
                 </div>
             </div>
 
-            <!-- 功能與過濾操作區 (預設隱藏) -->
+            <!-- 功能與過濾操作區 -->
             <div id="filterContainer" class="hidden bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex flex-wrap gap-2 items-center">
                     <button id="btnAll" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
@@ -198,7 +199,7 @@
                     </button>
                     <button id="btnPurchaseOnly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-purple-700 hover:bg-purple-100 transition-colors flex items-center">
                         <span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
-                        缺貨需等進貨 (<span id="btnPurchaseCount">0</span>)
+                        缺貨需採購 (<span id="btnPurchaseCount">0</span>)
                     </button>
                     <button id="btnNoStdOnly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-amber-700 hover:bg-amber-50 transition-colors flex items-center">
                         <span class="w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
@@ -219,7 +220,7 @@
                 <p id="loadingStatusText" class="text-slate-500 text-sm">正在套用內建補貨標準並計算補貨狀態...</p>
             </div>
 
-            <!-- 全能安全庫存大看板 (當不需要補貨時顯示) -->
+            <!-- 全能安全庫存大看板 -->
             <div id="allSafeCelebration" class="hidden bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-12 text-center text-white shadow-xl max-w-4xl mx-auto flex flex-col items-center justify-center space-y-6 transform hover:scale-[1.01] transition-transform duration-300">
                 <div class="p-6 bg-white/20 rounded-full animate-bounce">
                     <i data-lucide="shield-check" class="w-20 h-20 text-white"></i>
@@ -243,7 +244,7 @@
                 </div>
             </div>
 
-            <!-- 主要表格呈現區 (預設隱藏) -->
+            <!-- 主要表格呈現區 -->
             <div id="tableContainer" class="hidden bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -275,7 +276,7 @@
                         </div>
                         <div class="flex items-center space-x-1">
                             <span class="w-3 h-3 bg-purple-100 border border-purple-300 rounded"></span>
-                            <span class="font-bold text-purple-600">紫色：缺貨需等進貨 (全倉皆空)</span>
+                            <span class="font-bold text-purple-600">紫色：缺貨需採購 (全倉皆空)</span>
                         </div>
                     </div>
                 </div>
@@ -342,7 +343,7 @@
                 <!-- 批次與管理卡片 -->
                 <div class="lg:col-span-2 space-y-6">
                     
-                    <!-- 批次與雲端移轉按鈕 -->
+                    <!-- 跨電腦標準移轉 -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <h3 class="text-sm font-bold text-slate-950 flex items-center">
@@ -475,23 +476,24 @@
     <!-- 💡 唯一聚合 JavaScript 控制區 -->
     <script>
         // ==========================================
-        // 1. 全域常數與智慧版本管理
+        // 1. 全域變數定義
         // ==========================================
-        const CODE_VERSION = "2026.05.30_v10.5"; 
+        const CODE_VERSION = "2026.06.06_v10.0"; // 食材倉新版號，強制覆蓋快取
         const SETTINGS_PASSWORD = "1021";
         
-        const ALLOWED_WAREHOUSES = [
-            "63-6倉/下層/理貨倉",
+        const MAIN_WAREHOUSES = [
+            "63-6倉/下層/理貨倉"
+        ];
+        
+        const BACKUP_WAREHOUSES = [
             "63-6倉/上層",
             "63-7倉",
             "63-5倉/低溫倉"
         ];
 
-        function makeKey(code, unit) {
-            return `${String(code || '').trim().toUpperCase()}_${String(unit || '').trim().toUpperCase()}`;
-        }
+        const ALLOWED_WAREHOUSES = [...MAIN_WAREHOUSES, ...BACKUP_WAREHOUSES];
 
-        // 🎯 內建補貨標準資料庫
+        // 🎯 內建補貨標準資料庫 (食材版 61 項，含杏鮑菇大D 72)
         const DEFAULT_STANDARDS = {
             "A0201A101_KG": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg", "refill": 80 },
             "A0201A101_KG/大發": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg/大發", "refill": 48 },
@@ -558,7 +560,6 @@
             "R07000107_600G/包": { "name": "蒜片", "code": "R07000107", "unit": "600g/包", "refill": 20 } 
         };
 
-        // 全域變數定義
         let replenishStandards = {};
         let originalRows = [];
         let processedRows = [];
@@ -568,9 +569,8 @@
         let pendingAction = null;
 
         // ==========================================
-        // 2. 核心底層與資料處理函數
+        // 2. 核心底層與資料處理函數 (置頂宣告，防止 TDZ)
         // ==========================================
-        
         function initClock() {
             function updateClock() {
                 const clockEl = document.getElementById('liveClock');
@@ -605,9 +605,27 @@
             return isNaN(parsed) ? null : parsed;
         }
 
-        // 🛡️ 程式碼絕對優先機制
+        // 建立精確的主鍵 (代號+單位)
+        function makeKey(code, unit) {
+            return `${String(code || '').trim().toUpperCase()}_${String(unit || '').trim().toUpperCase()}`;
+        }
+
+        function findStandard(code, unit) {
+            const compKey = makeKey(code, unit);
+            if (replenishStandards[compKey]) {
+                return replenishStandards[compKey];
+            }
+            return null;
+        }
+
+        function saveStandardsToStorage() {
+            localStorage.setItem('food_standards_db_v10', JSON.stringify(replenishStandards));
+        }
+
+        // 🛡️ 強制程式碼絕對優先 (食材版)
         function loadStandardsFromStorage() {
-            const stored = localStorage.getItem('replenish_standards_db_v8');
+            const currentStoredVersion = localStorage.getItem('food_standards_code_version');
+            const stored = localStorage.getItem('food_standards_db_v10');
             let localData = {};
 
             if (stored) {
@@ -628,18 +646,29 @@
                         name: item.name,
                         code: item.code,
                         unit: cleanUnit,
-                        refill: parseFloat(item.refill) || 0
+                        refill: parseFloat(item.refill) || 0,
+                        category: item.category || '未分類'
                     };
                 }
             }
 
-            // DEFAULT_STANDARDS 放在後面，讓它無條件覆蓋同仁電腦上快取的舊資料！
-            replenishStandards = { ...cleanedLocalData, ...DEFAULT_STANDARDS };
+            if (currentStoredVersion !== CODE_VERSION) {
+                console.log(`食材代碼標準升級中！自 ${currentStoredVersion} 升級至最新版 ${CODE_VERSION}`);
+                localStorage.setItem('food_standards_code_version', CODE_VERSION);
+                
+                const customLocalData = {};
+                for (let key in cleanedLocalData) {
+                    if (!DEFAULT_STANDARDS[key]) {
+                        customLocalData[key] = cleanedLocalData[key];
+                    }
+                }
+                
+                replenishStandards = { ...DEFAULT_STANDARDS, ...customLocalData };
+            } else {
+                replenishStandards = { ...cleanedLocalData, ...DEFAULT_STANDARDS };
+            }
+            
             saveStandardsToStorage();
-        }
-
-        function saveStandardsToStorage() {
-            localStorage.setItem('replenish_standards_db_v8', JSON.stringify(replenishStandards));
         }
 
         function renderSettingsList() {
@@ -671,7 +700,7 @@
                     <td class="px-6 py-3 font-mono font-semibold text-slate-800">${item.code}</td>
                     <td class="px-6 py-3 text-slate-500 font-medium">${item.unit}</td>
                     <td class="px-6 py-3 text-slate-600">${item.name}</td>
-                    <td class="px-6 py-3 text-right font-mono font-bold text-indigo-600">${item.refill}</td>
+                    <td class="px-6 py-3 text-right font-mono font-bold text-indigo-600">${item.refill !== null ? item.refill.toLocaleString() : '未設定'}</td>
                     <td class="px-6 py-3 text-center space-x-1">
                         <button onclick="window.editStd('${compositeKey}')" class="text-indigo-600 hover:text-indigo-900 font-medium px-2 py-1 rounded hover:bg-indigo-50">修改</button>
                         <button onclick="window.deleteStd('${compositeKey}')" class="text-rose-600 hover:text-rose-900 font-medium px-2 py-1 rounded hover:bg-rose-50">刪除</button>
@@ -712,7 +741,8 @@
                                 name: item.name,
                                 code: item.code,
                                 unit: cleanUnit,
-                                refill: parseFloat(item.refill) || 0
+                                refill: parseFloat(item.refill) || 0,
+                                category: item.category || '未分類'
                             };
                             mergedCount++;
                         }
@@ -724,7 +754,7 @@
                     }
                 })
                 .catch(err => {
-                    console.log('未偵測到預載 JSON 備份檔，將採用代碼內建之 DEFAULT_STANDARDS。');
+                    console.log('未偵測到預載 JSON 備份檔，將採用 DEFAULT_STANDARDS。');
                 });
         }
 
@@ -735,7 +765,7 @@
             }
             const dataSourceTag = document.getElementById('dataSourceTag');
             const loadingStatusText = document.getElementById('loadingStatusText');
-            if (dataSourceTag) dataSourceTag.textContent = `* 數據載入來源: 🌐 Google Sheet 雲端實時更新 (預設網址自動讀取)`;
+            if (dataSourceTag) dataSourceTag.textContent = `* 數據載入來源: 🌐 Google Sheet 雲端實時更新 (自動連線)`;
             if (loadingStatusText) loadingStatusText.textContent = "正在與預設 Google Sheet 建立連線、自動讀取最新結餘中...";
             showLoading(true);
             
@@ -761,16 +791,15 @@
             fetch('補貨標準.csv?t=' + new Date().getTime(), { cache: 'no-store' })
                 .then(response => {
                     if (response.ok) return response.text();
-                    throw new Error('No default csv in folder');
+                    throw new Error('No default csv');
                 })
                 .then(csvText => {
-                    console.log('成功偵測到同目錄下的 補貨標準.csv...');
                     const dataSourceTag = document.getElementById('dataSourceTag');
                     if (dataSourceTag) dataSourceTag.textContent = `* 數據載入來源: 📁 全自動讀取 (補貨標準.csv)`;
                     parseCSV(csvText);
                 })
                 .catch(err => {
-                    console.log('未偵測到預載的 補貨標準.csv 檔案。');
+                    console.log('未偵測到預載的補貨標準.csv 檔案。');
                 });
         }
 
@@ -823,7 +852,7 @@
                     unit: headers.findIndex(h => h.includes('單位') || h.includes('庫存單位')),
                     warehouse: headers.findIndex(h => h.includes('倉庫')),
                     stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量')),
-                    refill: headers.findIndex(h => h.includes('補貨標準'))
+                    refill: headers.findIndex(h => h.includes('最低庫存') || h.includes('補貨標準'))
                 };
 
                 const colIdx = {
@@ -856,14 +885,15 @@
                                 name: cells[colIdx.itemName] ? String(cells[colIdx.itemName]).trim() : '品項',
                                 code: itemCode,
                                 unit: cleanUnit,
-                                refill: refillVal
+                                refill: refillVal,
+                                category: cells[colIdx.category] ? String(cells[colIdx.category]).trim() : '未分類'
                             };
                             hasRefillUpdated = true;
                         }
 
                         if (ALLOWED_WAREHOUSES.includes(warehouse)) {
                             parsedData.push({
-                                category: cells[colIdx.category] !== undefined ? String(cells[colIdx.category]).trim() : '',
+                                category: cells[colIdx.category] !== undefined ? String(cells[colIdx.category]).trim() : '未分類',
                                 itemCode: itemCode,
                                 itemName: cells[colIdx.itemName] !== undefined ? String(cells[colIdx.itemName]).trim() : '',
                                 unit: unit,
@@ -879,7 +909,7 @@
                 }
 
                 if (parsedData.length === 0) {
-                    throw new Error('未在檔案中找到任何符合限定 4 個倉庫的數據。');
+                    throw new Error('未在檔案中找到任何符合限定四倉的數據。');
                 }
 
                 originalRows = parsedData;
@@ -906,7 +936,7 @@
                     unit: headers.findIndex(h => h.includes('單位') || h.includes('庫存單位')),
                     warehouse: headers.findIndex(h => h.includes('倉庫')),
                     stock: headers.findIndex(h => h.includes('庫存量') || h.includes('庫存數量')),
-                    refill: headers.findIndex(h => h.includes('補貨標準'))
+                    refill: headers.findIndex(h => h.includes('最低庫存') || h.includes('補貨標準'))
                 };
 
                 const colIdx = {
@@ -940,14 +970,15 @@
                                 name: cells[colIdx.itemName] ? cells[colIdx.itemName].trim() : '品項',
                                 code: itemCode,
                                 unit: cleanUnit,
-                                refill: refillVal
+                                refill: refillVal,
+                                category: cells[colIdx.category] ? cells[colIdx.category].trim() : '未分類'
                             };
                             hasRefillUpdated = true;
                         }
 
                         if (ALLOWED_WAREHOUSES.includes(warehouse)) {
                             parsedData.push({
-                                category: cells[colIdx.category] || '',
+                                category: cells[colIdx.category] || '未分類',
                                 itemCode: itemCode,
                                 itemName: cells[colIdx.itemName] || '',
                                 unit: unit,
@@ -975,25 +1006,66 @@
             }
         }
 
-        // 核心計算：整合內建補貨標準 (加上 needPurchase 邏輯)
+        // 🚀 核心極致優化：整合四倉智慧比對邏輯，並【主動補上 0 庫存斷檔漏報】
         function analyzeInventory() {
             const inventoryLookup = {};
+            
+            // 1. 建立各品項在各個倉庫的實際在庫字典
             originalRows.forEach(row => {
-                const rowKey = makeKey(row.itemCode, row.unit);
-                if (!inventoryLookup[rowKey]) {
-                    inventoryLookup[rowKey] = {};
+                const cleanKey = makeKey(row.itemCode, row.unit);
+                if (!inventoryLookup[cleanKey]) {
+                    inventoryLookup[cleanKey] = {};
                 }
-                inventoryLookup[rowKey][row.warehouse] = (inventoryLookup[rowKey][row.warehouse] || 0) + row.stock;
+                inventoryLookup[cleanKey][row.warehouse] = (inventoryLookup[cleanKey][row.warehouse] || 0) + row.stock;
             });
 
-            processedRows = originalRows.map(row => {
+            // 2. 防漏空庫存補償機制：找出有設定標準，但 CSV 裡面「完全沒有主倉(63-6倉/下層/理貨倉)」資料的品項
+            const mainWarehouseRows = new Set();
+            originalRows.forEach(row => {
+                if (MAIN_WAREHOUSES.includes(row.warehouse)) {
+                    mainWarehouseRows.add(makeKey(row.itemCode, row.unit));
+                }
+            });
+
+            const allRowsToAnalyze = [...originalRows];
+
+            for (let stdKey in replenishStandards) {
+                const stdItem = replenishStandards[stdKey];
+                if (stdItem && stdItem.refill !== null && stdItem.refill !== undefined) {
+                    const cleanStdKey = makeKey(stdItem.code, stdItem.unit);
+                    
+                    // 如果這個品項(連同單位)在 CSV 裡「完全沒有主倉紀錄」（代表主倉庫存是0，被 ERP 省略匯出了）
+                    if (!mainWarehouseRows.has(cleanStdKey)) {
+                        // 強制產生一筆主倉為 0 的虛擬紀錄，保證系統必定會對它進行缺貨判定！
+                        allRowsToAnalyze.push({
+                            category: stdItem.category || "未分類",
+                            itemCode: stdItem.code,
+                            itemName: stdItem.name,
+                            unit: stdItem.unit,
+                            warehouse: "63-6倉/下層/理貨倉", // 注入理貨倉代表
+                            stock: 0,
+                            isVirtual: true
+                        });
+                        
+                        if (!inventoryLookup[cleanStdKey]) {
+                            inventoryLookup[cleanStdKey] = {};
+                        }
+                        if (inventoryLookup[cleanStdKey]["63-6倉/下層/理貨倉"] === undefined) {
+                            inventoryLookup[cleanStdKey]["63-6倉/下層/理貨倉"] = 0;
+                        }
+                    }
+                }
+            }
+
+            // 3. 開始進行缺貨判定
+            processedRows = allRowsToAnalyze.map(row => {
                 let needReplenish = false;
                 let needPurchase = false;
                 let isNoStandard = false;
                 let backupStockInfo = '';
                 
                 const compositeKey = makeKey(row.itemCode, row.unit);
-                const stdItem = replenishStandards[compositeKey];
+                const stdItem = findStandard(row.itemCode, row.unit);
                 const refillLimit = stdItem ? stdItem.refill : null;
 
                 let displayName = row.itemName;
@@ -1001,27 +1073,33 @@
                     displayName = stdItem.name;
                 }
 
-                if (row.warehouse === "63-6倉/下層/理貨倉") {
+                // 只有「主倉資料列」才會進行警戒判定
+                if (MAIN_WAREHOUSES.includes(row.warehouse)) {
                     if (refillLimit !== null) {
-                        if (row.stock < refillLimit) {
-                            const stockIn7 = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["63-7倉"]) || 0;
-                            const stockIn6Upper = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["63-6倉/上層"]) || 0;
-                            const stockInLowTemp = (inventoryLookup[compositeKey] && inventoryLookup[compositeKey]["63-5倉/低溫倉"]) || 0;
+                        const totalMainStock = inventoryLookup[compositeKey]["63-6倉/下層/理貨倉"] || 0;
 
-                            if (stockIn7 > 0 || stockIn6Upper > 0 || stockInLowTemp > 0) {
+                        // 如果主倉庫存低於標準
+                        if (totalMainStock < refillLimit) {
+                            const stockIn7 = inventoryLookup[compositeKey]["63-7倉"] || 0;
+                            const stockIn6Upper = inventoryLookup[compositeKey]["63-6倉/上層"] || 0;
+                            const stockInLowTemp = inventoryLookup[compositeKey]["63-5倉/低溫倉"] || 0;
+                            const totalBackupStock = stockIn7 + stockIn6Upper + stockInLowTemp;
+
+                            if (totalBackupStock > 0) {
                                 needReplenish = true;
                                 const backups = [];
                                 if (stockIn7 > 0) {
-                                    backups.push(`63-7倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockIn7}</span>`);
+                                    backups.push(`63-7倉: <span class="text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded font-mono font-bold text-[13px]">${stockIn7}</span>`);
                                 }
                                 if (stockIn6Upper > 0) {
-                                    backups.push(`上層倉: <span class="text-rose-700 bg-rose-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockIn6Upper}</span>`);
+                                    backups.push(`上層倉: <span class="text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded font-mono font-bold text-[13px]">${stockIn6Upper}</span>`);
                                 }
                                 if (stockInLowTemp > 0) {
-                                    backups.push(`63-5低溫倉: <span class="text-fuchsia-800 bg-fuchsia-100 px-1 py-0.5 rounded font-mono font-bold text-[13px]">${stockInLowTemp}</span>`);
+                                    backups.push(`63-5低溫倉: <span class="text-indigo-800 bg-indigo-100 px-1.5 py-0.5 rounded font-mono font-bold text-[13px]">${stockInLowTemp}</span>`);
                                 }
                                 backupStockInfo = backups.join(' / ');
                             } else {
+                                // 🌟 所有後援倉也都沒有，觸發紫色採購警報！
                                 needPurchase = true; 
                             }
                         }
@@ -1032,7 +1110,7 @@
 
                 return {
                     ...row,
-                    itemName: displayName || '未知品項名稱',
+                    itemName: displayName || '未知品項',
                     refill: refillLimit,
                     needReplenish,
                     needPurchase,
@@ -1051,7 +1129,7 @@
             
             updateFilterButtons(currentFilter);
             checkCelebration();
-            showToast(`成功自動對應 ${originalRows.length} 筆指定四倉庫存資料`, 'check', 'text-emerald-400');
+            showToast(`成功自動對應 ${originalRows.length} 筆實體資料與防漏空補償判定`, 'check', 'text-indigo-400');
         }
 
         function checkCelebration() {
@@ -1089,7 +1167,7 @@
                     formItemCode.setAttribute('readonly', true);
                 }
                 if (formUnit) {
-                    formUnit.value = item.unit;
+                    formUnit.value = item.unit || '';
                     formUnit.setAttribute('readonly', true);
                 }
                 if (formItemName) formItemName.value = item.name;
@@ -1097,19 +1175,19 @@
                     formRefill.value = item.refill;
                     formRefill.focus();
                 }
-                document.getElementById('formTitle').textContent = `正在修改: ${item.code} (${item.unit})`;
-                showToast(`已載入 ${item.code} (${item.unit}) 設定，請在左側修改標準數量後點選儲存`, 'info', 'text-sky-400');
+                document.getElementById('formTitle').textContent = `正在修改: ${item.code}`;
+                showToast(`已載入 ${item.code} 設定，請在左側修改標準數量後點選儲存`, 'info', 'text-sky-400');
             }
         }
 
         function deleteStd(compositeKey) {
             const item = replenishStandards[compositeKey];
             if (!item) return;
-            if (confirm(`確定要刪除品項 [ ${item.code} ] 單位為 [ ${item.unit} ] 的補貨標準設定嗎？`)) {
+            if (confirm(`確定要刪除品項 [ ${item.code} ] 的最低庫存標準嗎？`)) {
                 delete replenishStandards[compositeKey];
                 saveStandardsToStorage();
                 renderSettingsList();
-                showToast(`已刪除品項 ${item.code} (${item.unit}) 的補貨標準`, 'trash', 'text-rose-400');
+                showToast(`已刪除品項 ${item.code} 的補貨標準`, 'trash', 'text-rose-400');
                 if (originalRows.length > 0) {
                     analyzeInventory();
                 }
@@ -1141,7 +1219,7 @@
                     formRefill.value = '';
                     formRefill.focus();
                 }
-                document.getElementById('formTitle').textContent = `設定品項標準: ${code} (${unit})`;
+                document.getElementById('formTitle').textContent = `設定品項標準: ${code}`;
             };
 
             if (isUnlocked) {
@@ -1283,8 +1361,8 @@
                 let refillCell = '';
                 const compositeKey = makeKey(row.itemCode, row.unit);
                 if (row.refill !== null) {
-                    refillCell = `<span class="font-mono font-bold text-slate-900 text-sm">${row.refill}</span>`;
-                } else if (row.warehouse === "63-6倉/下層/理貨倉") {
+                    refillCell = `<span class="font-mono font-bold text-slate-900 text-sm">${row.refill.toLocaleString()}</span>`;
+                } else if (MAIN_WAREHOUSES.includes(row.warehouse)) {
                     refillCell = `
                         <button onclick="window.quickSetStd('${compositeKey}', '${row.itemName}')" class="text-xs text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 flex items-center inline-flex">
                             <i data-lucide="plus" class="w-3 h-3 mr-0.5"></i> 設定標準
@@ -1302,7 +1380,7 @@
                                 <i data-lucide="alert-circle" class="w-3.5 h-3.5 mr-1"></i>
                                 內場需補貨
                             </span>
-                            <span class="text-xs text-slate-600 mt-1 font-semibold flex items-center gap-1">
+                            <span class="text-xs text-slate-600 mt-1 font-semibold flex flex-wrap items-center justify-center gap-1">
                                 後援: ${row.backupStockInfo}
                             </span>
                         </div>
@@ -1312,18 +1390,18 @@
                         <div class="inline-flex flex-col items-center space-y-1.5 py-1">
                             <span class="inline-flex items-center px-2 py-1 rounded bg-purple-200 text-purple-800 text-xs font-bold border border-purple-300 animate-pulse shadow-sm shadow-purple-500/20">
                                 <i data-lucide="shopping-cart" class="w-3.5 h-3.5 mr-1"></i>
-                                缺貨需等進貨
+                                缺貨需採購
                             </span>
                             <span class="text-[10px] text-purple-600 mt-1 font-semibold flex items-center gap-1">
-                                其他倉別已無庫存
+                                其他後援倉已無庫存
                             </span>
                         </div>
                     `;
-                } else if (row.warehouse === "63-6倉/下層/理貨倉") {
+                } else if (MAIN_WAREHOUSES.includes(row.warehouse)) {
                     if (row.isNoStandard) {
                         statusBadge = `
                             <span class="inline-flex items-center px-2 py-1 rounded bg-amber-100 text-amber-800 text-xs font-medium">
-                                未設補貨標準
+                                未設標準
                             </span>
                         `;
                     } else if (row.stock < row.refill) {
@@ -1342,7 +1420,7 @@
                 } else {
                     statusBadge = `
                         <span class="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-600 text-xs">
-                            後援庫存
+                            後援常備庫存
                         </span>
                     `;
                 }
@@ -1354,18 +1432,14 @@
                     <td class="px-6 py-4 font-medium text-slate-500 text-xs">${row.unit}</td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-0.5 rounded text-xs ${
-                            row.warehouse === '63-6倉/下層/理貨倉' 
-                            ? 'bg-amber-50 text-amber-800 border border-amber-200' 
-                            : row.warehouse === '63-6倉/上層'
-                            ? 'bg-sky-50 text-sky-800 border border-sky-200'
-                            : row.warehouse === '63-7倉'
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : 'bg-fuchsia-50 text-fuchsia-800 border border-fuchsia-200'
+                            MAIN_WAREHOUSES.includes(row.warehouse) 
+                            ? 'bg-indigo-50 text-indigo-800 border border-indigo-200' 
+                            : 'bg-slate-100 text-slate-700 border border-slate-200'
                         }">
                             ${row.warehouse}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-right font-mono font-extrabold text-[18px] tracking-tight ${row.needReplenish ? 'text-rose-600' : row.needPurchase ? 'text-purple-600' : 'text-slate-900'}">${row.stock}</td>
+                    <td class="px-6 py-4 text-right font-mono font-extrabold text-[18px] tracking-tight ${row.needReplenish ? 'text-rose-600' : row.needPurchase ? 'text-purple-600' : 'text-slate-900'}">${row.stock.toLocaleString()}</td>
                     <td class="px-6 py-4 text-right">${refillCell}</td>
                     <td class="px-6 py-4 text-center">${statusBadge}</td>
                 `;
@@ -1413,12 +1487,12 @@
             const sectSettings = document.getElementById('sectSettings');
 
             if (tab === 'inventory') {
-                if (tabInventory) tabInventory.className = "px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-sm transition-all flex items-center";
+                if (tabInventory) tabInventory.className = "px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-800 shadow-sm transition-all flex items-center";
                 if (tabSettings) tabSettings.className = "px-4 py-1.5 rounded-lg text-sm font-semibold text-indigo-100 hover:text-white hover:bg-indigo-600/50 transition-all flex items-center";
                 if (sectInventory) sectInventory.classList.remove('hidden');
                 if (sectSettings) sectSettings.classList.add('hidden');
             } else {
-                if (tabSettings) tabSettings.className = "px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-sm transition-all flex items-center";
+                if (tabSettings) tabSettings.className = "px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-indigo-800 shadow-sm transition-all flex items-center";
                 if (tabInventory) tabInventory.className = "px-4 py-1.5 rounded-lg text-sm font-semibold text-indigo-100 hover:text-white hover:bg-indigo-600/50 transition-all flex items-center";
                 if (sectInventory) sectInventory.classList.add('hidden');
                 if (sectSettings) sectSettings.classList.remove('hidden');
@@ -1477,323 +1551,383 @@
             if (window.lucide) window.lucide.createIcons();
             autoLoadBackupJson();
             autoFetchCloudOnLoad(finalUrl);
-        });
+            
+            // DOM 事件綁定
+            const tabInventory = document.getElementById('tabInventory');
+            const tabSettings = document.getElementById('tabSettings');
+            const btnLockSettings = document.getElementById('btnLockSettings');
+            const btnCancelPassword = document.getElementById('btnCancelPassword');
+            const passwordForm = document.getElementById('passwordForm');
+            const btnResetToDefaults = document.getElementById('btnResetToDefaults');
+            const btnTriggerImportBackup = document.getElementById('btnTriggerImportBackup');
+            const backupFileInput = document.getElementById('backupFileInput');
+            const btnImportStd = document.getElementById('btnImportStd');
+            const importStdFile = document.getElementById('importStdFile');
+            const stdForm = document.getElementById('stdForm');
+            const btnResetForm = document.getElementById('btnResetForm');
+            const searchStdInput = document.getElementById('searchStdInput');
+            const btnClearAllStds = document.getElementById('btnClearAllStds');
+            const btnSyncCloud = document.getElementById('btnSyncCloud');
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const btnAll = document.getElementById('btnAll');
+            const btnReplenishOnly = document.getElementById('btnReplenishOnly');
+            const btnPurchaseOnly = document.getElementById('btnPurchaseOnly');
+            const btnNoStdOnly = document.getElementById('btnNoStdOnly');
+            const searchInputEl = document.getElementById('searchInput');
 
-        // DOM 事件綁定
-        const tabInventory = document.getElementById('tabInventory');
-        const tabSettings = document.getElementById('tabSettings');
-        const btnLockSettings = document.getElementById('btnLockSettings');
-        const btnCancelPassword = document.getElementById('btnCancelPassword');
-        const passwordForm = document.getElementById('passwordForm');
-        const btnResetToDefaults = document.getElementById('btnResetToDefaults');
-        const btnTriggerImportBackup = document.getElementById('btnTriggerImportBackup');
-        const backupFileInput = document.getElementById('backupFileInput');
-        const btnImportStd = document.getElementById('btnImportStd');
-        const importStdFile = document.getElementById('importStdFile');
-        const stdForm = document.getElementById('stdForm');
-        const btnResetForm = document.getElementById('btnResetForm');
-        const searchStdInput = document.getElementById('searchStdInput');
-        const btnClearAllStds = document.getElementById('btnClearAllStds');
-        const btnSyncCloud = document.getElementById('btnSyncCloud');
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const btnAll = document.getElementById('btnAll');
-        const btnReplenishOnly = document.getElementById('btnReplenishOnly');
-        const btnPurchaseOnly = document.getElementById('btnPurchaseOnly');
-        const btnNoStdOnly = document.getElementById('btnNoStdOnly');
-        const searchInput = document.getElementById('searchInput');
+            if (tabInventory) {
+                tabInventory.addEventListener('click', () => {
+                    setActiveTab('inventory');
+                });
+            }
 
-        if (tabInventory) {
-            tabInventory.addEventListener('click', () => {
-                setActiveTab('inventory');
-            });
-        }
-
-        if (tabSettings) {
-            tabSettings.addEventListener('click', () => {
-                if (isUnlocked) {
-                    setActiveTab('settings');
-                    window.renderSettingsList();
-                } else {
-                    openPasswordModal(() => {
+            if (tabSettings) {
+                tabSettings.addEventListener('click', () => {
+                    if (isUnlocked) {
                         setActiveTab('settings');
                         window.renderSettingsList();
-                    });
-                }
-            });
-        }
+                    } else {
+                        openPasswordModal(() => {
+                            setActiveTab('settings');
+                            window.renderSettingsList();
+                        });
+                    }
+                });
+            }
 
-        if (btnLockSettings) {
-            btnLockSettings.addEventListener('click', () => {
-                isUnlocked = false;
-                setActiveTab('inventory');
-                showToast('已安全鎖定補貨標準管理頁面！', 'lock', 'text-slate-400');
-            });
-        }
+            if (btnLockSettings) {
+                btnLockSettings.addEventListener('click', () => {
+                    isUnlocked = false;
+                    setActiveTab('inventory');
+                    showToast('已安全鎖定補貨標準管理頁面！', 'lock', 'text-slate-400');
+                });
+            }
 
-        if (btnCancelPassword) {
-            btnCancelPassword.addEventListener('click', () => {
-                closePasswordModal();
-                showToast('已取消密碼驗證。', 'shield-alert', 'text-amber-500');
-            });
-        }
-
-        if (passwordForm) {
-            passwordForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const inputSettingsPassword = document.getElementById('inputSettingsPassword');
-                const passwordErrorMsg = document.getElementById('passwordErrorMsg');
-                const passwordModalCard = document.getElementById('passwordModalCard');
-                
-                const inputVal = inputSettingsPassword ? inputSettingsPassword.value : '';
-                if (inputVal === SETTINGS_PASSWORD) {
-                    isUnlocked = true;
-                    if (passwordErrorMsg) passwordErrorMsg.classList.add('hidden');
+            if (btnCancelPassword) {
+                btnCancelPassword.addEventListener('click', () => {
                     closePasswordModal();
-                    showToast('密碼驗證成功，已解鎖補貨標準管理中心。', 'shield-check', 'text-emerald-400');
-                    if (typeof pendingAction === 'function') {
-                        pendingAction();
-                    }
-                } else {
-                    if (passwordErrorMsg) passwordErrorMsg.classList.remove('hidden');
-                    if (inputSettingsPassword) {
-                        inputSettingsPassword.value = '';
-                        inputSettingsPassword.focus();
-                    }
-                    if (passwordModalCard) {
-                        passwordModalCard.classList.add('animate-bounce');
-                        setTimeout(() => passwordModalCard.classList.remove('animate-bounce'), 500);
-                    }
-                }
-            });
-        }
+                    showToast('已取消密碼驗證。', 'shield-alert', 'text-amber-500');
+                });
+            }
 
-        if (btnResetToDefaults) {
-            btnResetToDefaults.addEventListener('click', () => {
-                if (confirm('確定要一鍵重置本機標準，同步回網頁程式碼所寫的補貨標準嗎？您的自訂變更將被內建標準覆蓋！')) {
-                    replenishStandards = JSON.parse(JSON.stringify(DEFAULT_STANDARDS));
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const inputSettingsPassword = document.getElementById('inputSettingsPassword');
+                    const passwordErrorMsg = document.getElementById('passwordErrorMsg');
+                    const passwordModalCard = document.getElementById('passwordModalCard');
+                    
+                    const inputVal = inputSettingsPassword ? inputSettingsPassword.value : '';
+                    if (inputVal === SETTINGS_PASSWORD) {
+                        isUnlocked = true;
+                        if (passwordErrorMsg) passwordErrorMsg.classList.add('hidden');
+                        closePasswordModal();
+                        showToast('密碼驗證成功，已解鎖補貨標準管理中心。', 'shield-check', 'text-emerald-400');
+                        if (typeof pendingAction === 'function') {
+                            pendingAction();
+                        }
+                    } else {
+                        if (passwordErrorMsg) passwordErrorMsg.classList.remove('hidden');
+                        if (inputSettingsPassword) {
+                            inputSettingsPassword.value = '';
+                            inputSettingsPassword.focus();
+                        }
+                        if (passwordModalCard) {
+                            passwordModalCard.classList.add('animate-bounce');
+                            setTimeout(() => passwordModalCard.classList.remove('animate-bounce'), 500);
+                        }
+                    }
+                });
+            }
+
+            if (btnResetToDefaults) {
+                btnResetToDefaults.addEventListener('click', () => {
+                    if (confirm('確定要一鍵重置，同步回網頁預設的食材標準嗎？您的自訂變更將會被覆蓋！')) {
+                        replenishStandards = JSON.parse(JSON.stringify(DEFAULT_STANDARDS));
+                        saveStandardsToStorage();
+                        window.renderSettingsList();
+                        showToast('已成功強制同步本機快取，重置為預設標準！', 'rotate-ccw', 'text-emerald-400');
+                        if (originalRows.length > 0) {
+                            analyzeInventory();
+                        }
+                    }
+                });
+            }
+
+            if (btnTriggerImportBackup) {
+                btnTriggerImportBackup.addEventListener('click', () => {
+                    if (backupFileInput) backupFileInput.click();
+                });
+            }
+
+            if (backupFileInput) {
+                backupFileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        const file = e.target.files[0];
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            try {
+                                const importedData = JSON.parse(evt.target.result);
+                                let validCount = 0;
+                                for (let key in importedData) {
+                                    let item = importedData[key];
+                                    if (item && item.code && item.unit && item.refill !== undefined) {
+                                        let cleanUnit = String(item.unit).replace(/\/63-6倉\/下層\/理貨倉/g, '');
+                                        const cleanKey = makeKey(item.code, cleanUnit);
+                                        replenishStandards[cleanKey] = {
+                                            name: item.name,
+                                            code: item.code,
+                                            unit: cleanUnit,
+                                            refill: parseFloat(item.refill) || 0,
+                                            category: item.category || '未分類'
+                                        };
+                                        validCount++;
+                                    }
+                                }
+                                if (validCount > 0) {
+                                    saveStandardsToStorage();
+                                    window.renderSettingsList();
+                                    showToast(`還原成功！已成功同步匯入 ${validCount} 個補貨臨界值。`, 'shield-check', 'text-emerald-400');
+                                    if (originalRows.length > 0) {
+                                        analyzeInventory();
+                                    }
+                                } else {
+                                    showToast('匯入失敗：這不是正確的補貨標準備份檔案格式。', 'alert-circle', 'text-rose-400');
+                                }
+                            } catch (err) {
+                                showToast(`還原解析失敗: ${err.message}`, 'alert-circle', 'text-rose-400');
+                            }
+                        };
+                        reader.readAsText(file);
+                        backupFileInput.value = '';
+                    }
+                });
+            }
+
+            if (btnImportStd) {
+                btnImportStd.addEventListener('click', () => {
+                    if (importStdFile) importStdFile.click();
+                });
+            }
+
+            if (importStdFile) {
+                importStdFile.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleFileSelect(e.target.files[0]);
+                    }
+                });
+            }
+
+            if (stdForm) {
+                stdForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const formItemCode = document.getElementById('formItemCode');
+                    const formUnit = document.getElementById('formUnit');
+                    const formItemName = document.getElementById('formItemName');
+                    const formRefill = document.getElementById('formRefill');
+
+                    const code = formItemCode ? formItemCode.value.trim() : '';
+                    const unit = formUnit ? formUnit.value.trim() : '';
+                    const name = formItemName ? formItemName.value.trim() : '';
+                    const val = formRefill ? parseFloat(formRefill.value) : NaN;
+
+                    if (!code || !unit || isNaN(val)) return;
+
+                    const compositeKey = makeKey(code, unit);
+                    replenishStandards[compositeKey] = {
+                        name: name || (replenishStandards[compositeKey] ? replenishStandards[compositeKey].name : '未命名品項'),
+                        code: code,
+                        unit: unit,
+                        refill: val,
+                        category: '未分類'
+                    };
+
                     saveStandardsToStorage();
                     window.renderSettingsList();
-                    showToast('已成功強制同步本機快取，重置為程式碼預設標準！', 'rotate-ccw', 'text-emerald-400');
+                    stdForm.reset();
+                    if (formItemCode) formItemCode.removeAttribute('readonly');
+                    if (formUnit) formUnit.removeAttribute('readonly');
+                    document.getElementById('formTitle').textContent = "新增/修改補貨標準";
+                    showToast(`成功儲存品項 [${code}] 單位 [${unit}] 的補貨標準為 ${val}`, 'check', 'text-emerald-400');
+                    
                     if (originalRows.length > 0) {
                         analyzeInventory();
                     }
-                }
-            });
-        }
+                });
+            }
 
-        if (btnTriggerImportBackup) {
-            btnTriggerImportBackup.addEventListener('click', () => {
-                if (backupFileInput) backupFileInput.click();
-            });
-        }
+            if (btnResetForm) {
+                btnResetForm.addEventListener('click', () => {
+                    if (stdForm) stdForm.reset();
+                    document.getElementById('formTitle').textContent = "新增/修改補貨標準";
+                    const formItemCode = document.getElementById('formItemCode');
+                    const formUnit = document.getElementById('formUnit');
+                    if (formItemCode) formItemCode.removeAttribute('readonly');
+                    if (formUnit) formUnit.removeAttribute('readonly');
+                });
+            }
 
-        if (backupFileInput) {
-            backupFileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    const file = e.target.files[0];
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        try {
-                            const importedData = JSON.parse(evt.target.result);
-                            let validCount = 0;
-                            for (let key in importedData) {
-                                let item = importedData[key];
-                                if (item && item.code && item.unit && item.refill !== undefined) {
-                                    let cleanUnit = String(item.unit).replace(/\/63-6倉\/下層\/理貨倉/g, '');
-                                    const cleanKey = makeKey(item.code, cleanUnit);
-                                    replenishStandards[cleanKey] = {
-                                        name: item.name,
-                                        code: item.code,
-                                        unit: cleanUnit,
-                                        refill: parseFloat(item.refill) || 0
-                                    };
-                                    validCount++;
-                                }
-                            }
-                            if (validCount > 0) {
-                                saveStandardsToStorage();
-                                window.renderSettingsList();
-                                showToast(`還原成功！已成功同步匯入 ${validCount} 個補貨臨界值。`, 'shield-check', 'text-emerald-400');
-                                if (originalRows.length > 0) {
-                                    analyzeInventory();
-                                }
-                            } else {
-                                showToast('匯入失敗：這不是正確的補貨標準備份檔案格式。', 'alert-circle', 'text-rose-400');
-                            }
-                        } catch (err) {
-                            showToast(`還原解析失敗: ${err.message}`, 'alert-circle', 'text-rose-400');
+            if (searchStdInput) {
+                searchStdInput.addEventListener('input', () => {
+                    window.renderSettingsList();
+                });
+            }
+
+            if (btnClearAllStds) {
+                btnClearAllStds.addEventListener('click', () => {
+                    if (confirm('警告！這將會清除您目前在瀏覽器內建立的所有補貨標準。確定要全部清空嗎？')) {
+                        replenishStandards = {};
+                        saveStandardsToStorage();
+                        window.renderSettingsList();
+                        showToast('已清空所有補貨標準！', 'trash', 'text-rose-400');
+                        if (originalRows.length > 0) {
+                            analyzeInventory();
                         }
+                    }
+                });
+            }
+
+            if (btnSyncCloud) {
+                btnSyncCloud.addEventListener('click', () => {
+                    const cloudUrlInput = document.getElementById('cloudUrlInput');
+                    const targetUrl = cloudUrlInput ? cloudUrlInput.value.trim() : '';
+                    
+                    if (!targetUrl) {
+                        showToast('請先貼上有效的 Google Sheet CSV 發佈網址或 ERP API 網址！', 'alert-circle', 'text-rose-400');
+                        if (cloudUrlInput) cloudUrlInput.focus();
+                        return;
+                    }
+
+                    localStorage.setItem('google_sheet_csv_url', targetUrl);
+                    const dataSourceTag = document.getElementById('dataSourceTag');
+                    const loadingStatusText = document.getElementById('loadingStatusText');
+                    if (dataSourceTag) dataSourceTag.textContent = `* 數據載入來源: 🌐 Google Sheet 雲端實時更新`;
+                    if (loadingStatusText) loadingStatusText.textContent = "正在與 Google Sheet 建立加密連線、拉取每 30 秒最新結餘中...";
+                    showLoading(true);
+
+                    const busterUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+
+                    fetch(busterUrl, { cache: 'no-store' })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('無法讀取該網址，請確認您的 Google 試算表是否已公開且格式正確。');
+                            }
+                            return response.text();
+                        })
+                        .then(csvText => {
+                            parseCSV(csvText);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            showLoading(false);
+                            const emptyState = document.getElementById('emptyState');
+                            if (emptyState) emptyState.classList.remove('hidden');
+                            showToast(`同步失敗: ${err.message}`, 'alert-circle', 'text-rose-400');
+                        });
+                });
+            }
+
+            if (dropZone && fileInput) {
+                dropZone.addEventListener('click', () => fileInput.click());
+                
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('border-indigo-400', 'bg-indigo-50/50');
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('border-indigo-400', 'bg-indigo-50/50');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('border-indigo-400', 'bg-indigo-50/50');
+                    if (e.dataTransfer.files.length > 0) {
+                        handleFileSelect(e.dataTransfer.files[0]);
+                    }
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleFileSelect(e.target.files[0]);
+                    }
+                });
+            }
+
+            function handleFileSelect(file) {
+                const dataSourceTag = document.getElementById('dataSourceTag');
+                if (dataSourceTag) dataSourceTag.textContent = `* 數據載入來源: 📁 手動匯入 (${file.name})`;
+                
+                showLoading(true);
+                const reader = new FileReader();
+
+                if (file.name.endsWith('.csv')) {
+                    reader.onload = function(e) {
+                        parseCSV(e.target.result);
                     };
                     reader.readAsText(file);
-                    backupFileInput.value = '';
-                }
-            });
-        }
-
-        if (btnImportStd) {
-            btnImportStd.addEventListener('click', () => {
-                if (importStdFile) importStdFile.click();
-            });
-        }
-
-        if (importStdFile) {
-            importStdFile.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    importStandardsFromFile(e.target.files[0]);
-                }
-            });
-        }
-
-        if (stdForm) {
-            stdForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const formItemCode = document.getElementById('formItemCode');
-                const formUnit = document.getElementById('formUnit');
-                const formItemName = document.getElementById('formItemName');
-                const formRefill = document.getElementById('formRefill');
-
-                const code = formItemCode ? formItemCode.value.trim() : '';
-                const unit = formUnit ? formUnit.value.trim() : '';
-                const name = formItemName ? formItemName.value.trim() : '';
-                const val = formRefill ? parseFloat(formRefill.value) : NaN;
-
-                if (!code || !unit || isNaN(val)) return;
-
-                const compositeKey = makeKey(code, unit);
-                replenishStandards[compositeKey] = {
-                    name: name || (replenishStandards[compositeKey] ? replenishStandards[compositeKey].name : '未命名品項'),
-                    code: code,
-                    unit: unit,
-                    refill: val
-                };
-
-                saveStandardsToStorage();
-                window.renderSettingsList();
-                stdForm.reset();
-                if (formItemCode) formItemCode.removeAttribute('readonly');
-                if (formUnit) formUnit.removeAttribute('readonly');
-                document.getElementById('formTitle').textContent = "新增/修改補貨標準";
-                showToast(`成功儲存品項 [${code}] 單位 [${unit}] 的補貨標準為 ${val}`, 'check', 'text-emerald-400');
-                
-                if (originalRows.length > 0) {
-                    analyzeInventory();
-                }
-            });
-        }
-
-        if (btnResetForm) {
-            btnResetForm.addEventListener('click', () => {
-                if (stdForm) stdForm.reset();
-                document.getElementById('formTitle').textContent = "新增/修改補貨標準";
-                const formItemCode = document.getElementById('formItemCode');
-                const formUnit = document.getElementById('formUnit');
-                if (formItemCode) formItemCode.removeAttribute('readonly');
-                if (formUnit) formUnit.removeAttribute('readonly');
-            });
-        }
-
-        if (searchStdInput) {
-            searchStdInput.addEventListener('input', () => {
-                window.renderSettingsList();
-            });
-        }
-
-        if (btnClearAllStds) {
-            btnClearAllStds.addEventListener('click', () => {
-                if (confirm('警告！這將會清除您目前在瀏覽器內建立的所有補貨標準。確定要全部清空嗎？')) {
-                    replenishStandards = {};
-                    saveStandardsToStorage();
-                    window.renderSettingsList();
-                    showToast('已清空所有補貨標準！', 'trash', 'text-rose-400');
-                    if (originalRows.length > 0) {
-                        analyzeInventory();
-                    }
-                }
-            });
-        }
-
-        if (btnSyncCloud) {
-            btnSyncCloud.addEventListener('click', () => {
-                const cloudUrlInput = document.getElementById('cloudUrlInput');
-                const targetUrl = cloudUrlInput ? cloudUrlInput.value.trim() : '';
-                
-                if (!targetUrl) {
-                    showToast('請先貼上有效的 Google Sheet CSV 發佈網址或 ERP API 網址！', 'alert-circle', 'text-rose-400');
-                    if (cloudUrlInput) cloudUrlInput.focus();
-                    return;
-                }
-
-                localStorage.setItem('google_sheet_csv_url', targetUrl);
-                const dataSourceTag = document.getElementById('dataSourceTag');
-                const loadingStatusText = document.getElementById('loadingStatusText');
-                if (dataSourceTag) dataSourceTag.textContent = `* 數據載入來源: 🌐 Google Sheet 雲端實時更新`;
-                if (loadingStatusText) loadingStatusText.textContent = "正在與 Google Sheet 建立加密連線、拉取每 30 秒最新結餘中...";
-                showLoading(true);
-
-                const busterUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-
-                fetch(busterUrl, { cache: 'no-store' })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('無法讀取該網址，請確認您的 Google 試算表是否已公開且格式正確。');
+                } else {
+                    reader.onload = function(e) {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            const firstSheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[firstSheetName];
+                            const sheetRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                            parseExcelData(sheetRows);
+                        } catch (err) {
+                            showLoading(false);
+                            showToast(`Excel 載入失敗: ${err.message}`, 'alert-circle', 'text-rose-400');
                         }
-                        return response.text();
-                    })
-                    .then(csvText => {
-                        parseCSV(csvText);
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        showLoading(false);
-                        const emptyState = document.getElementById('emptyState');
-                        if (emptyState) emptyState.classList.remove('hidden');
-                        showToast(`同步失敗: ${err.message}`, 'alert-circle', 'text-rose-400');
-                    });
-            });
-        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+                if (fileInput) fileInput.value = '';
+            }
 
-        if (btnAll) {
-            btnAll.addEventListener('click', () => {
-                currentFilter = 'all';
-                updateFilterButtons('all');
-                checkCelebration();
-                renderTable();
-            });
-        }
+            if (btnAll) {
+                btnAll.addEventListener('click', () => {
+                    currentFilter = 'all';
+                    updateFilterButtons('all');
+                    checkCelebration();
+                    renderTable();
+                });
+            }
 
-        if (btnReplenishOnly) {
-            btnReplenishOnly.addEventListener('click', () => {
-                currentFilter = 'replenish';
-                updateFilterButtons('replenish');
-                checkCelebration();
-                renderTable();
-            });
-        }
+            if (btnReplenishOnly) {
+                btnReplenishOnly.addEventListener('click', () => {
+                    currentFilter = 'replenish';
+                    updateFilterButtons('replenish');
+                    checkCelebration();
+                    renderTable();
+                });
+            }
 
-        if (btnPurchaseOnly) {
-            btnPurchaseOnly.addEventListener('click', () => {
-                currentFilter = 'purchase';
-                updateFilterButtons('purchase');
-                checkCelebration();
-                renderTable();
-            });
-        }
+            if (btnPurchaseOnly) {
+                btnPurchaseOnly.addEventListener('click', () => {
+                    currentFilter = 'purchase';
+                    updateFilterButtons('purchase');
+                    checkCelebration();
+                    renderTable();
+                });
+            }
 
-        if (btnNoStdOnly) {
-            btnNoStdOnly.addEventListener('click', () => {
-                currentFilter = 'no_std';
-                updateFilterButtons('no_std');
-                checkCelebration();
-                renderTable();
-            });
-        }
+            if (btnNoStdOnly) {
+                btnNoStdOnly.addEventListener('click', () => {
+                    currentFilter = 'no_std';
+                    updateFilterButtons('no_std');
+                    checkCelebration();
+                    renderTable();
+                });
+            }
 
-        if (searchInput) {
-            searchInput.addEventListener('input', () => {
-                renderTable();
-            });
-        }
+            if (searchInputEl) {
+                searchInputEl.addEventListener('input', () => {
+                    renderTable();
+                });
+            }
+        });
     </script>
 </body>
 </html>
