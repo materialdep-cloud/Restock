@@ -478,7 +478,7 @@
         // ==========================================
         // 1. 全域變數定義
         // ==========================================
-        const CODE_VERSION = "2026.06.06_v10.0"; // 食材倉新版號，強制覆蓋快取
+        const CODE_VERSION = "2026.06.06_v10.1"; // 食材倉新版號，強制覆蓋快取
         const SETTINGS_PASSWORD = "1021";
         
         const MAIN_WAREHOUSES = [
@@ -495,14 +495,14 @@
 
         // 🎯 內建補貨標準資料庫 (食材版 61 項，含杏鮑菇大D 72)
         const DEFAULT_STANDARDS = {
-            "A0201A101_KG": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg", "refill": 80 },
+            "A0201A101_KG": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg", "refill": 48 },
             "A0201A101_KG/大發": { "name": "杏鮑菇A+", "code": "A0201A101", "unit": "kg/大發", "refill": 48 },
             "A0201B101_600G/包": { "name": "杏鮑菇B+", "code": "A0201B101", "unit": "600g/包", "refill": 150 },
             "A0201B101_600G/包/大發": { "name": "杏鮑菇B+", "code": "A0201B101", "unit": "600g/包/大發", "refill": 150 },
             "A0201D101_KG": { "name": "杏鮑菇大D", "code": "A0201D101", "unit": "kg", "refill": 54 }, 
             "A020A0101_KG": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg", "refill": 480 },
-            "A020A0101_KG/大發": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/大發", "refill": 160 },
-            "A020A0101_KG/威蕈多": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/威蕈多", "refill": 80 },
+            "A020A0101_KG/大發": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/大發", "refill": 128 },
+            "A020A0101_KG/威蕈多": { "name": "杏鮑菇A", "code": "A020A0101", "unit": "kg/威蕈多", "refill": 64 },
             "A020A0301_300G/盒": { "name": "有機杏鮑菇A", "code": "A020A0301", "unit": "300g/盒", "refill": 72 },
             "A020B0101_KG": { "name": "杏鮑菇B", "code": "A020B0101", "unit": "kg", "refill": 540 },
             "A020C0101_1KG/包/大發": { "name": "杏鮑菇C", "code": "A020C0101", "unit": "1kg/包/大發", "refill": 80 },
@@ -524,10 +524,10 @@
             "A07000302_包": { "name": "好菇道有機雪白菇", "code": "A07000302", "unit": "包", "refill": 1890 },
             "A070B0101_KG": { "name": "雪白菇B", "code": "A070B0101", "unit": "kg", "refill": 240 },
             "A090A0101_KG": { "name": "秀珍菇A", "code": "A090A0101", "unit": "kg", "refill": 450 },
-            "A100A0101_200G/盒": { "name": "霸王洋菇", "code": "A100A0101", "unit": "200g/盒", "refill": 100 },
+            "A100A0101_200G/盒": { "name": "霸王洋菇", "code": "A100A0101", "unit": "200g/盒", "refill": 80 },
             "A100B0101_200G/盒": { "name": "洋菇 ［盒裝］", "code": "A100B0101", "unit": "200g/盒", "refill": 100 },
             "A100C0103_KG": { "name": "散裝洋菇", "code": "A100C0103", "unit": "kg", "refill": 10 },
-            "A110A0101_KG": { "name": "黑蠔菇A", "code": "A110A0101", "unit": "kg", "refill": 240 },
+            "A110A0101_KG": { "name": "黑蠔菇A", "code": "A110A0101", "unit": "kg", "refill": 180 },
             "A110A0303_盒": { "name": "有機黑蠔菇A［盒裝］", "code": "A110A0303", "unit": "盒", "refill": 864 },
             "A120A0101_KG": { "name": "白精靈菇A", "code": "A120A0101", "unit": "kg", "refill": 160 },
             "A13000302_包": { "name": "有機完株金滑菇", "code": "A13000302", "unit": "包", "refill": 120 },
@@ -535,10 +535,10 @@
             "A15000101_包": { "name": "好菇道舞菇", "code": "A15000101", "unit": "包", "refill": 60 },
             "A160A0301_150G/包": { "name": "有機柳松菇A", "code": "A160A0301", "unit": "150g/包", "refill": 108 },
             "A18000101_600G/包": { "name": "珊瑚菇", "code": "A18000101", "unit": "600g/包", "refill": 60 },
-            "A290A0102_KG": { "name": "韓小菇A", "code": "A290A0102", "unit": "kg", "refill": 12 },
+            "A290A0102_KG": { "name": "韓小菇A", "code": "A290A0102", "unit": "kg", "refill": 24 },
             "A290A0301_150G/盒": { "name": "有機韓小菇A", "code": "A290A0301", "unit": "150g/盒", "refill": 48 },
             "D05000101_KG": { "name": "洋蔥［去皮］", "code": "D05000101", "unit": "kg", "refill": 80 },
-            "D05000105_1公斤/包": { "name": "紫洋蔥［帶皮］", "code": "D05000105", "unit": "1公斤/包", "refill": 0 },
+            "D05000105_1公斤/包": { "name": "紫洋蔥［帶皮］", "code": "D05000105", "unit": "1公斤/包", "refill":20 },
             "D05000106_2KG/包": { "name": "洋蔥［帶皮］", "code": "D05000106", "unit": "2kg/包", "refill": 20 },
             "G020A0101_KG": { "name": "水果彩椒［紅］", "code": "G020A0101", "unit": "kg", "refill": 3 },
             "G020A0102_KG": { "name": "水果彩椒［黃］", "code": "G020A0102", "unit": "kg", "refill": 3 },
@@ -556,7 +556,7 @@
             "R06000102_包": { "name": "日茂-烏殼綠筍茸", "code": "R06000102", "unit": "包", "refill": 20 },
             "R06000103_包": { "name": "日茂-連殼綠竹筍［2入］", "code": "R06000103", "unit": "包", "refill": 20 },
             "R06000106_包": { "name": "日茂-連殼綠竹筍［小-5入］", "code": "R06000106", "unit": "包", "refill": 20 },
-            "S02000101_KG": { "name": "雨來菇", "code": "S02000101", "unit": "kg", "refill": 0 },
+            "S02000101_KG": { "name": "雨來菇", "code": "S02000101", "unit": "kg", "refill": 10 },
             "R07000107_600G/包": { "name": "蒜片", "code": "R07000107", "unit": "600g/包", "refill": 20 } 
         };
 
