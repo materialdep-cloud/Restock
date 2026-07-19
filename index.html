@@ -21,7 +21,7 @@
 
     <!-- 導航欄 -->
     <header class="bg-indigo-600 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
                 <i data-lucide="package-search" class="w-8 h-8 text-indigo-200"></i>
                 <div>
@@ -33,17 +33,22 @@
                 </div>
             </div>
             
-            <!-- 右側即時日期時間顯示與分頁切換 -->
-            <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto justify-end">
-                <!-- 動態時間顯示區 -->
+            <!-- 右側即時日期時間顯示、Google Sheet 連結與分頁切換 -->
+            <div class="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto justify-end flex-wrap">
+                <!-- 新增：前往雲端總表連結按鈕 -->
+                <a href="https://docs.google.com/spreadsheets/d/1M5wUKufssL8_UMzFfGGsjcF9DffPJimc1HJQD_EADME/edit?gid=322034433#gid=322034433" target="_blank" rel="noopener noreferrer" class="bg-indigo-700 hover:bg-indigo-800 text-white border border-indigo-500/40 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center space-x-1.5 hover:scale-[1.02] active:scale-[0.98] shrink-0">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5 text-indigo-200"></i>
+                    <span>開啟 Google Sheet 總表</span>
+                </a>
+
+                <!-- 動態時間顯示區 (維持顯示 HTML 即時時間) -->
                 <div class="bg-indigo-700/40 px-4 py-2 rounded-xl border border-indigo-500/30 flex items-center space-x-2 text-sm font-medium shrink-0">
                     <i data-lucide="clock" class="w-4 h-4 text-indigo-200 animate-pulse"></i>
                     <span id="liveClock" class="font-mono tracking-wider text-indigo-50">載入時間中...</span>
                 </div>
 
-                <!-- 分頁切換按鈕（整合跨倉快速切換） -->
+                <!-- 分頁切換按鈕 -->
                 <div class="bg-indigo-700/60 p-1.5 rounded-xl flex space-x-1 border border-indigo-500/30 shrink-0">
-                    <!-- 系統快速切換連結 -->
                     <a href="package_replenish.html" class="px-3.5 py-1.5 rounded-lg text-sm font-semibold text-indigo-200 hover:text-white hover:bg-indigo-600/35 transition-all flex items-center">
                         <i data-lucide="box" class="w-4 h-4 mr-1.5 text-indigo-200"></i>
                         包材倉系統
@@ -113,7 +118,7 @@
                         </div>
                     </div>
 
-                    <!-- 雲端一鍵同步 -->
+                    <!-- 雲端一鍵同步與 H1 更新時間顯示區 -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
                         <div class="mb-2">
                             <h4 class="text-xs font-bold text-indigo-600 flex items-center">
@@ -127,6 +132,17 @@
                                 <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i>
                                 <span>一鍵讀取系統結餘</span>
                             </button>
+                            
+                            <!-- 動態顯示從 Google Sheet H1 讀取的更新時間 (新加入：同步讀取H1顯示在此且設定為紅色樣式) -->
+                            <div id="sheetUpdateTimeDisplay" class="hidden bg-red-50 border border-red-100 p-2.5 rounded-xl text-xs text-red-700 font-medium flex flex-col space-y-1.5">
+                                <div class="flex items-center space-x-1.5">
+                                    <i data-lucide="clock" class="w-4 h-4 text-red-500 shrink-0 animate-pulse"></i>
+                                    <span id="sheetUpdateTimeText" class="text-red-600 font-extrabold">更新時間：-</span>
+                                </div>
+                                <div id="sheetTimeWarning" class="hidden text-[11px] text-red-500 font-bold bg-red-100/55 p-1.5 rounded-lg border border-red-200">
+                                    ⚠️ 雲端資料過期超過1小時，請手動上傳報表！
+                                </div>
+                            </div>
                             
                             <!-- Google Sheet 網址設定 -->
                             <div>
@@ -212,7 +228,7 @@
                     </button>
                 </div>
                 
-                <!-- 新增：品類篩選下拉選單與關鍵字搜尋並列 -->
+                <!-- 品類篩選下拉選單與關鍵字搜尋並列 -->
                 <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
                     <div class="relative w-full sm:w-44">
                         <select id="categoryFilter" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer">
@@ -481,6 +497,23 @@
         </div>
     </div>
 
+    <!-- 🌟 客製化數據過期紅色警示彈窗 (Warning Modal) -->
+    <div id="warningModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl border border-red-200 p-6 max-w-md w-full mx-4 text-center transform scale-95 transition-transform duration-300" id="warningModalCard">
+            <div class="p-4 bg-red-100 text-red-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <i data-lucide="alert-octagon" class="w-10 h-10"></i>
+            </div>
+            <h3 class="text-lg font-bold text-red-700 mb-2">⚠️ 數據更新時間異常</h3>
+            <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+                偵測到雲端總表的更新時間已落後目前系統時間 <span class="font-bold text-red-600">1 小時以上</span>！<br>
+                為確保庫存準確度，請立即手動上傳最新的理貨倉報表。
+            </p>
+            <button onclick="window.closeWarningModal()" class="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-2.5 rounded-xl text-sm transition-colors shadow-md">
+                我了解了
+            </button>
+        </div>
+    </div>
+
     <!-- 通知提示元件 -->
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-lg shadow-lg text-sm flex items-center space-x-2 translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50">
         <i id="toastIcon" data-lucide="info" class="w-5 h-5"></i>
@@ -492,7 +525,7 @@
         // ==========================================
         // 1. 全域變數定義區 (最先載入)
         // ==========================================
-        const CODE_VERSION = "2026.06.06_v10.2"; // 升級版本號
+        const CODE_VERSION = "2026.07.19_v10.3"; // 升級版本號
         const SETTINGS_PASSWORD = "1021";
         
         const MAIN_WAREHOUSES = [
@@ -774,9 +807,98 @@
             return r.map(cell => cell.replace(/^"(.*)"$/, '$1').trim());
         }
 
+        // 🌟 獨立宣告：處理 H1 庫存更新時間與比對超時機制 (1小時)
+        function checkAndUpdateSheetTime(timeStr) {
+            const updateTimeDisplay = document.getElementById('sheetUpdateTimeDisplay');
+            const updateTimeText = document.getElementById('sheetUpdateTimeText');
+            const sheetTimeWarning = document.getElementById('sheetTimeWarning');
+            
+            if (!timeStr || !updateTimeDisplay || !updateTimeText) {
+                if (updateTimeDisplay) updateTimeDisplay.classList.add('hidden');
+                return;
+            }
+
+            // 顯示 H1 的時間 (保持原字串並套用紅色)
+            updateTimeText.innerHTML = `總表更新時間：<span class="text-red-600 font-black">${timeStr.replace('更新時間：', '').replace('更新時間:', '').trim()}</span>`;
+            updateTimeDisplay.classList.remove('hidden');
+
+            // 🎯 正則擷取日期時間：格式如 "2026/07/19 06:00:01" 
+            const match = timeStr.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2}\s+\d{1,2}:\d{2}:\d{2})/);
+            if (match) {
+                const sheetDateStr = match[1].replace(/-/g, '/'); // 確保 Date 解析格式一致
+                const sheetDate = new Date(sheetDateStr);
+                const now = new Date();
+
+                if (!isNaN(sheetDate.getTime())) {
+                    // 比對差距 (毫秒)
+                    const diffMs = Math.abs(now - sheetDate);
+                    const oneHourMs = 60 * 60 * 1000; // 1小時 = 3,600,000 毫秒
+
+                    if (diffMs >= oneHourMs) {
+                        // 1. 顯示方案B卡片內的黃/紅警告條
+                        if (sheetTimeWarning) sheetTimeWarning.classList.remove('hidden');
+                        
+                        // 2. 顯示全局客製化高級紅色警示視窗 (非瀏覽器原生 alert)
+                        showWarningModal();
+
+                        // 3. 右下角通知
+                        showToast('⚠️ 雲端資料過期已落後超過1小時！請手動上傳報表！', 'alert-triangle', 'text-red-500');
+                    } else {
+                        if (sheetTimeWarning) sheetTimeWarning.classList.add('hidden');
+                        closeWarningModal();
+                    }
+                }
+            }
+
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // 🌟 彈窗顯示與隱藏控制
+        function showWarningModal() {
+            const modal = document.getElementById('warningModal');
+            const card = document.getElementById('warningModalCard');
+            if (modal && card) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    modal.classList.add('opacity-100');
+                    card.classList.remove('scale-95');
+                    card.classList.add('scale-100');
+                }, 50);
+            }
+        }
+
+        function closeWarningModal() {
+            const modal = document.getElementById('warningModal');
+            const card = document.getElementById('warningModalCard');
+            if (modal && card) {
+                modal.classList.remove('opacity-100');
+                modal.classList.add('opacity-0');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+        window.closeWarningModal = closeWarningModal;
+
         function parseExcelData(sheetRows, isLearningStandards = false) {
             try {
                 const headers = sheetRows[0].map(h => String(h || '').trim());
+                
+                // 🎯 偵測第一行（H1）是否包含更新時間
+                let sheetUpdateTime = '';
+                sheetRows[0].forEach(cell => {
+                    const cellStr = String(cell || '');
+                    if (cellStr.includes('更新時間')) {
+                        sheetUpdateTime = cellStr.trim();
+                    }
+                });
+
+                // 處理並比對更新時間
+                checkAndUpdateSheetTime(sheetUpdateTime);
+
                 const hMap = {
                     category: headers.findIndex(h => h.includes('品類')),
                     itemCode: headers.findIndex(h => h.includes('品項代號')),
@@ -841,6 +963,18 @@
                 const lines = text.split(/\r?\n/);
                 if (lines.length < 2) throw new Error('檔案格式不正確');
                 const headers = parseCSVLine(lines[0]);
+
+                // 🎯 偵測第一行（H1）是否包含更新時間
+                let sheetUpdateTime = '';
+                headers.forEach(cell => {
+                    if (cell && cell.includes('更新時間')) {
+                        sheetUpdateTime = cell.trim();
+                    }
+                });
+
+                // 處理並比對更新時間
+                checkAndUpdateSheetTime(sheetUpdateTime);
+
                 const hMap = {
                     category: headers.findIndex(h => h.includes('品類')),
                     itemCode: headers.findIndex(h => h.includes('品項代號')),
@@ -1044,7 +1178,7 @@
                 if (formItemName) formItemName.value = item.name;
                 if (formRefill) { formRefill.value = item.refill; formRefill.focus(); }
                 document.getElementById('formTitle').textContent = `正在修改: ${item.code}`;
-                showToast(`已載入 ${item.code} 設定，請在左側修改標準數量後點選儲存`, 'info', 'text-sky-400');
+                showToast(`已載入 ${item.code} 設定，請在left側修改標準數量後點選儲存`, 'info', 'text-sky-400');
             }
         }
 
@@ -1155,7 +1289,7 @@
             else if (currentFilter === 'purchase') displayRows = displayRows.filter(r => r.needPurchase);
             else if (currentFilter === 'no_std') displayRows = displayRows.filter(r => r.isNoStandard);
 
-            // 2. 🌟 品類下拉選單篩選
+            // 2. 品類下拉選單篩選
             const categoryFilterVal = document.getElementById('categoryFilter') ? document.getElementById('categoryFilter').value : 'All';
             if (categoryFilterVal !== 'All') {
                 displayRows = displayRows.filter(r => r.category === categoryFilterVal);
@@ -1518,7 +1652,7 @@
             if (btnNoStdOnly) btnNoStdOnly.addEventListener('click', () => { currentFilter = 'no_std'; updateFilterButtons('no_std'); checkCelebration(); renderTable(); });
             if (searchInputEl) searchInputEl.addEventListener('input', () => renderTable());
             
-            // 🌟 品類篩選下拉選單事件監聽器
+            // 品類篩選下拉選單事件監聽器
             if (categoryFilter) {
                 categoryFilter.addEventListener('change', () => {
                     checkCelebration();
