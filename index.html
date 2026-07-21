@@ -485,7 +485,7 @@
                 偵測到雲端總表的更新時間已落後目前系統時間 <span class="font-extrabold text-red-600">1 小時以上</span>！<br><br>
                 為確保庫存準確，請立即手動上傳最新的庫存結餘，操作如下：<br>
                 <span class="text-xs text-slate-500 font-semibold">ERP → 庫存結餘查詢 → 查詢 → 匯出 → 下載 → 上傳</span><br><br>
-                <span class="text-xs text-rose-500 block font-bold">💡 提醒：手動匯出時，倉庫「無需」選擇任何倉別，但顯示層級的 "倉庫" 必須打勾。</span>
+                <span class="text-xs text-rose-500 block font-bold">💡 提醒：手動匯出時，倉庫「無需」選擇任何倉別<br>但顯示層級的 "倉庫" 必須打勾。</span>
             </p>
             <button onclick="window.closeWarningModal()" class="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-2.5 rounded-xl text-sm transition-all shadow-md">
                 我了解了，立即處理
@@ -1112,7 +1112,8 @@
                             ⚠️ 數據時效異常，請勿完全信賴
                         </h2>
                         <p class="text-rose-100 text-base md:text-lg font-medium max-w-2xl mx-auto">
-                            偵測到雲端資料更新時間已落後 1 小時以上！為避免理貨出錯，請立即點選上方「方案 A」手動上傳最新 ERP 報表。
+                            偵測到雲端資料更新時間已落後 1 小時以上！<br>為避免出錯，請立即點選上方「方案 A」手動上傳最新 ERP 庫存結餘。<br>
+                            ERP → 庫存結餘查詢 → 查詢 → 匯出 → 下載 → 上傳
                         </p>
                         <p class="text-[14px] text-rose-200/90 font-mono bg-rose-900/40 px-4 py-2 rounded-full border border-rose-500/20 inline-block">
                             異常判定時間：<span id="celebrationTime" class="font-bold">-</span>
