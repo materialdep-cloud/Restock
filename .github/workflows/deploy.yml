@@ -1,0 +1,42 @@
+name: Deploy Stock Viewer to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # 如果您的預設分支是 master，請改為 master
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 程式碼
+        uses: actions/checkout@v4
+
+      # 核心步驟：使用 Linux sed 指令進行動態字串替換
+      - name: 將 GitHub Secret (IP) 動態注入 HTML 檔案
+        run: |
+          sed -i "s/__ALLOWED_VPN_IPS__/${{ secrets.IP }}/g" index.html
+
+      - name: 設定 GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: 上傳網頁構建產物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'  # 部署專案根目錄
+
+      - name: 執行 Pages 部署
+        id: deployment
+        uses: actions/deploy-pages@v4
